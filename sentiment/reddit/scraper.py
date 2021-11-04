@@ -1,4 +1,4 @@
-from api import RedditAPI
+from sentiment.reddit.api import RedditAPI
 import os
 
 
