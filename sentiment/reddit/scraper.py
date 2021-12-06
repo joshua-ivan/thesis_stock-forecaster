@@ -1,5 +1,15 @@
 from sentiment.reddit.api import RedditAPI
+import logging
 import os
+
+
+def setup_reddit_logger():
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    for logger_name in ("praw", "prawcore"):
+        logger = logging.getLogger(logger_name)
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
 
 
 def write_submission(directory, filename, content):
@@ -17,6 +27,7 @@ def write_submission(directory, filename, content):
 class RedditScraper:
     def __init__(self):
         self.api = RedditAPI()
+        setup_reddit_logger()
 
     def scrape(self, query, start_date, end_date, after):
         last_fullname = after
@@ -32,4 +43,4 @@ class RedditScraper:
                                      f'{submission.created_utc} - {submission.fullname}',
                                      f'{submission.title}\n\n\n{submission.selftext}')
         if last_fullname != after:
-            self.scrape(query, start_date, end_date, after)
+            self.scrape(query, start_date, end_date, last_fullname)

@@ -6,6 +6,14 @@ from datetime import timedelta
 import time
 
 
+def assert_write_calls(mock_write, timestamps):
+    calls = []
+    for index in range(len(timestamps)):
+        calls.append(call('posts/test', f'{timestamps[index]} - t3_test{index}', f'test title\n\n\ntest contents'))
+    mock_write.assert_has_calls(calls)
+    pass
+
+
 class RedditScraperTests(unittest.TestCase):
     def get_item_mock(self, timestamps):
         mock = []
@@ -20,6 +28,10 @@ class RedditScraperTests(unittest.TestCase):
         for delta in deltas:
             timestamps.append(self.current_time - timedelta(days=delta).total_seconds())
         return timestamps
+
+    def assert_scrape_calls(self, scrape_spy, after_fullnames):
+        calls = map(lambda x: call('test', self.last_week_time, self.current_time, x), after_fullnames)
+        scrape_spy.assert_has_calls(calls)
 
     class MockSubmission:
         def __init__(self, created_utc, fullname, title, selftext):
@@ -38,8 +50,8 @@ class RedditScraperTests(unittest.TestCase):
         mock_search.return_value = iter(())
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
-            scraper.scrape(query='test', start_date=self.last_week_time, end_date=time.time(), after='')
-            self.assertEqual(scrape_spy.call_count, 1)
+            scraper.scrape('test', self.last_week_time, self.current_time, '')
+            self.assert_scrape_calls(scrape_spy, '')
         mock_write.assert_not_called()
 
     @patch.object(RedditAPI, 'search')
@@ -50,11 +62,9 @@ class RedditScraperTests(unittest.TestCase):
 
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
-            scraper.scrape(query='test', start_date=self.last_week_time, end_date=self.current_time, after='')
-            self.assertEqual(scrape_spy.call_count, 2)
-        mock_write.assert_has_calls([
-            call('posts/test', f'{timestamps[0]} - t3_test0', f'test title\n\n\ntest contents')
-        ])
+            scraper.scrape('test', self.last_week_time, self.current_time, '')
+            self.assert_scrape_calls(scrape_spy, ['', 't3_test0'])
+        assert_write_calls(mock_write, timestamps)
 
     @patch.object(RedditAPI, 'search')
     @patch('sentiment.reddit.scraper.write_submission')
@@ -64,13 +74,9 @@ class RedditScraperTests(unittest.TestCase):
 
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
-            scraper.scrape(query='test', start_date=self.last_week_time, end_date=self.current_time, after='')
-            self.assertEqual(scrape_spy.call_count, 2)
-        mock_write.assert_has_calls([
-            call('posts/test', f'{timestamps[0]} - t3_test0', f'test title\n\n\ntest contents'),
-            call('posts/test', f'{timestamps[1]} - t3_test1', f'test title\n\n\ntest contents'),
-            call('posts/test', f'{timestamps[2]} - t3_test2', f'test title\n\n\ntest contents'),
-        ])
+            scraper.scrape('test', self.last_week_time, self.current_time, '')
+            self.assert_scrape_calls(scrape_spy, ['', 't3_test2'])
+        assert_write_calls(mock_write, timestamps)
 
     @patch.object(RedditAPI, 'search')
     @patch('sentiment.reddit.scraper.write_submission')
@@ -80,8 +86,8 @@ class RedditScraperTests(unittest.TestCase):
 
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
-            scraper.scrape(query='test', start_date=self.last_week_time, end_date=self.current_time, after='')
-            self.assertEqual(scrape_spy.call_count, 2)
+            scraper.scrape('test', self.last_week_time, self.current_time, '')
+            self.assert_scrape_calls(scrape_spy, ['', 't3_test2'])
         mock_write.assert_has_calls([
             call('posts/test', f'{timestamps[2]} - t3_test2', f'test title\n\n\ntest contents')
         ])
@@ -94,8 +100,8 @@ class RedditScraperTests(unittest.TestCase):
 
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
-            scraper.scrape(query='test', start_date=self.last_week_time, end_date=self.current_time, after='')
-            self.assertEqual(scrape_spy.call_count, 1)
+            scraper.scrape('test', self.last_week_time, self.current_time, '')
+            self.assert_scrape_calls(scrape_spy, '')
         mock_write.assert_has_calls([
             call('posts/test', f'{timestamps[0]} - t3_test0', f'test title\n\n\ntest contents')
         ])

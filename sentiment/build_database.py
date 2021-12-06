@@ -19,8 +19,8 @@ def main():
     for terms in search_terms:
         query = build_query(terms)
 
-        start_date = time.time()
-        end_date = start_date - timedelta(days=7).total_seconds()
+        end_date = time.time()
+        start_date = end_date - timedelta(days=7).total_seconds()
 
         reddit_scraper.scrape(query, start_date, end_date, '')
 
