@@ -13,7 +13,7 @@ def build_query(keywords):
     return query
 
 
-def main():
+def execute():
     reddit_scraper = RedditScraper()
 
     for terms in search_terms:
@@ -23,7 +23,3 @@ def main():
         start_date = end_date - timedelta(days=7).total_seconds()
 
         reddit_scraper.scrape(query, start_date, end_date, '')
-
-
-if __name__ == '__main__':
-    main()
