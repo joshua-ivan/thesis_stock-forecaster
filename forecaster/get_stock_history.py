@@ -1,6 +1,7 @@
 from forecaster.tickers import tickers
 import requests
 import os
+import time
 
 
 def write_stock_history(directory, filename, content):
@@ -15,19 +16,23 @@ def write_stock_history(directory, filename, content):
         print(error)
 
 
-def execute():
-    headers = {
-        'User-agent': 'Mozilla/5.0'
-    }
-    query_params = {
-        'period1': '1598825722',
-        'period2': '1630361722',
+def build_query_params(end_timestamp, interval_days):
+    start_timestamp = end_timestamp - (interval_days * 24 * 60 * 60)
+    return {
+        'period1': int(start_timestamp),
+        'period2': int(end_timestamp),
         'interval': '1d',
         'events': 'history',
         'includeAdjustedClose': 'true'
     }
+
+
+def execute():
+    headers = {
+        'User-agent': 'Mozilla/5.0'
+    }
     for ticker in tickers:
         stock_history = requests.get(f'https://query1.finance.yahoo.com/v7/finance/download/{ticker}',
-                                     headers=headers, params=query_params)
+                                     headers=headers, params=build_query_params(time.time(), 7))
 
         write_stock_history('prices', f'{ticker}.csv', stock_history.text)
