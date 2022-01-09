@@ -1,6 +1,7 @@
 from datetime import timedelta
 from sentiment.reddit.scraper import RedditScraper
 from sentiment.search_terms import search_terms
+from config import stocks
 import time
 
 
@@ -16,7 +17,8 @@ def build_query(keywords):
 def execute():
     reddit_scraper = RedditScraper()
 
-    for terms in search_terms:
+    for stock in stocks:
+        terms = [stock['ticker'], stock['company']]
         query = build_query(terms)
 
         end_date = time.time()

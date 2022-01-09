@@ -1,4 +1,5 @@
 from forecaster.tickers import tickers
+from config import stocks
 import pmdarima
 import arch
 import pandas
@@ -25,7 +26,9 @@ def extract_stock_prices(ticker):
 
 def execute():
     output_frame = pandas.DataFrame(columns=['Ticker', 'Expected', 'Actual', 'Error'])
-    for ticker in tickers:
+    for stock in stocks:
+        ticker = stock['ticker']
+
         price_history = extract_stock_prices(ticker)
         expected = forecast(price_history[0:-1])
         actual = price_history[-1]

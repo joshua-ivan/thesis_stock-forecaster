@@ -1,4 +1,5 @@
 from forecaster.tickers import tickers
+from config import stocks
 import requests
 import os
 import time
@@ -31,7 +32,9 @@ def execute():
     headers = {
         'User-agent': 'Mozilla/5.0'
     }
-    for ticker in tickers:
+    for stock in stocks:
+        ticker = stock['ticker']
+
         stock_history = requests.get(f'https://query1.finance.yahoo.com/v7/finance/download/{ticker}',
                                      headers=headers, params=build_query_params(time.time(), 7))
 
