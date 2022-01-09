@@ -1,6 +1,5 @@
 from datetime import timedelta
 from sentiment.reddit.scraper import RedditScraper
-from sentiment.search_terms import search_terms
 from config import stocks
 import time
 

@@ -1,4 +1,3 @@
-from forecaster.tickers import tickers
 from config import stocks
 import pmdarima
 import arch
