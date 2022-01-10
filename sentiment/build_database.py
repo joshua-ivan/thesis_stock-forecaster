@@ -5,10 +5,10 @@ import time
 
 
 def build_query(keywords):
-    query = f'{keywords[0]}'
+    query = f'"{keywords[0]}"'
     index = 1
     while index < len(keywords):
-        query = query + f' OR {keywords[index]}'
+        query = query + f' OR "{keywords[index]}"'
         index = index + 1
     return query
 
