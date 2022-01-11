@@ -1,8 +1,9 @@
 from unittest.mock import patch, call
-import unittest
 from sentiment.reddit.api import RedditAPI
 from sentiment.reddit.scraper import RedditScraper
+from utilities import file_io
 from datetime import timedelta
+import unittest
 import time
 
 
@@ -45,7 +46,7 @@ class RedditScraperTests(unittest.TestCase):
         self.last_week_time = self.current_time - timedelta(days=7).total_seconds()
 
     @patch.object(RedditAPI, 'search')
-    @patch('sentiment.reddit.scraper.write_submission')
+    @patch('utilities.file_io.write_file')
     def test_scrape_empty_submissions(self, mock_write, mock_search):
         mock_search.return_value = iter(())
         scraper = RedditScraper()
@@ -55,7 +56,7 @@ class RedditScraperTests(unittest.TestCase):
         mock_write.assert_not_called()
 
     @patch.object(RedditAPI, 'search')
-    @patch('sentiment.reddit.scraper.write_submission')
+    @patch('utilities.file_io.write_file')
     def test_scrape_one_submission(self, mock_write, mock_search):
         timestamps = self.generate_timestamps([1])
         mock_search.return_value = iter(self.get_item_mock(timestamps))
@@ -67,7 +68,7 @@ class RedditScraperTests(unittest.TestCase):
         assert_write_calls(mock_write, timestamps)
 
     @patch.object(RedditAPI, 'search')
-    @patch('sentiment.reddit.scraper.write_submission')
+    @patch('utilities.file_io.write_file')
     def test_scrape_many_submissions(self, mock_write, mock_search):
         timestamps = self.generate_timestamps([1, 2, 3])
         mock_search.return_value = iter(self.get_item_mock(timestamps))
@@ -79,7 +80,7 @@ class RedditScraperTests(unittest.TestCase):
         assert_write_calls(mock_write, timestamps)
 
     @patch.object(RedditAPI, 'search')
-    @patch('sentiment.reddit.scraper.write_submission')
+    @patch('utilities.file_io.write_file')
     def test_scrape_skip_submissions_past_end_date(self, mock_write, mock_search):
         timestamps = self.generate_timestamps([-1, 0, 1])
         mock_search.return_value = iter(self.get_item_mock(timestamps))
@@ -93,7 +94,7 @@ class RedditScraperTests(unittest.TestCase):
         ])
 
     @patch.object(RedditAPI, 'search')
-    @patch('sentiment.reddit.scraper.write_submission')
+    @patch('utilities.file_io.write_file')
     def test_scrape_stop_before_start_date(self, mock_write, mock_search):
         timestamps = self.generate_timestamps([1, 8])
         mock_search.return_value = iter(self.get_item_mock(timestamps))
