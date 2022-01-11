@@ -4,7 +4,7 @@ import os
 def read_file(location):
     try:
         with open(location, 'r', encoding='utf-8') as file:
-            text = file.read()
+            text = str(file.read())
             file.close()
             return text
     except OSError as error:
