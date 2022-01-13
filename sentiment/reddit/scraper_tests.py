@@ -1,7 +1,6 @@
 from unittest.mock import patch, call
 from sentiment.reddit.api import RedditAPI
 from sentiment.reddit.scraper import RedditScraper
-from utilities import file_io
 from datetime import timedelta
 import unittest
 import time
