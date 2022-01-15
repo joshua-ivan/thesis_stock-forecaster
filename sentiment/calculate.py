@@ -1,6 +1,8 @@
+from utilities import file_io
 import pandas
 import re
 import warnings
+import os
 
 
 class SentimentCalculator:
@@ -30,3 +32,27 @@ class SentimentCalculator:
             'positive': positive
         }
 
+
+def process_posts(directory):
+    sentiment_calculator = SentimentCalculator()
+
+    sentiment_data = pandas.DataFrame(columns=['Filename', 'Length', 'Negative', 'Positive'])
+    files = os.listdir(directory)
+    for file in files:
+        post = file_io.read_file(f'{directory}/{file}')
+        counts = sentiment_calculator.count_words(post, file)
+        sentiment_data = sentiment_data.append({
+            'Filename': file,
+            'Length': counts['length'],
+            'Negative': counts['negative'],
+            'Positive': counts['positive']
+        }, ignore_index=True)
+
+    sentiment_data.to_csv(f'counts/{directory}.csv', index=False)
+
+
+def execute():
+    base_dir = 'clean_posts'
+    post_directories = os.listdir(base_dir)
+    for post_dir in post_directories:
+        process_posts(f'{base_dir}/{post_dir}')
