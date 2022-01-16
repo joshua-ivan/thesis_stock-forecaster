@@ -1,15 +1,15 @@
 from unittest.mock import patch, call
 from sentiment.reddit.api import RedditAPI
 from sentiment.reddit.scraper import RedditScraper
-from datetime import timedelta
+from datetime import datetime, timedelta
 import unittest
 import time
 
 
-def assert_write_calls(mock_write, timestamps):
+def assert_write_calls(mock_write, dates):
     calls = []
-    for index in range(len(timestamps)):
-        calls.append(call('posts/test', f'{timestamps[index]} - t3_test{index}', f'test title\n\n\ntest contents'))
+    for index in range(len(dates)):
+        calls.append(call(f'posts/test/{dates[index]}', f't3_test{index}', f'test title\n\n\ntest contents'))
     mock_write.assert_has_calls(calls)
     pass
 
@@ -29,6 +29,12 @@ class RedditScraperTests(unittest.TestCase):
             timestamps.append(self.current_time - timedelta(days=delta).total_seconds())
         return timestamps
 
+    def generate_dates(self, deltas):
+        dates = []
+        for delta in deltas:
+            dates.append(datetime.fromtimestamp(int(self.current_time - timedelta(days=delta).total_seconds())).date())
+        return dates
+
     def assert_scrape_calls(self, scrape_spy, after_fullnames):
         calls = map(lambda x: call('test', self.last_week_time, self.current_time, x), after_fullnames)
         scrape_spy.assert_has_calls(calls)
@@ -42,6 +48,7 @@ class RedditScraperTests(unittest.TestCase):
 
     def setUp(self):
         self.current_time = time.time()
+        self.current_date = datetime.fromtimestamp(int(self.current_time)).date()
         self.last_week_time = self.current_time - timedelta(days=7).total_seconds()
 
     @patch.object(RedditAPI, 'search')
@@ -57,53 +64,65 @@ class RedditScraperTests(unittest.TestCase):
     @patch.object(RedditAPI, 'search')
     @patch('utilities.file_io.write_file')
     def test_scrape_one_submission(self, mock_write, mock_search):
-        timestamps = self.generate_timestamps([1])
+        deltas = [1]
+        timestamps = self.generate_timestamps(deltas)
         mock_search.return_value = iter(self.get_item_mock(timestamps))
 
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
             scraper.scrape('test', self.last_week_time, self.current_time, '')
             self.assert_scrape_calls(scrape_spy, ['', 't3_test0'])
-        assert_write_calls(mock_write, timestamps)
+
+        dates = self.generate_dates(deltas)
+        assert_write_calls(mock_write, dates)
 
     @patch.object(RedditAPI, 'search')
     @patch('utilities.file_io.write_file')
     def test_scrape_many_submissions(self, mock_write, mock_search):
-        timestamps = self.generate_timestamps([1, 2, 3])
+        deltas = [1, 2, 3]
+        timestamps = self.generate_timestamps(deltas)
         mock_search.return_value = iter(self.get_item_mock(timestamps))
 
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
             scraper.scrape('test', self.last_week_time, self.current_time, '')
             self.assert_scrape_calls(scrape_spy, ['', 't3_test2'])
-        assert_write_calls(mock_write, timestamps)
+
+        dates = self.generate_dates(deltas)
+        assert_write_calls(mock_write, dates)
 
     @patch.object(RedditAPI, 'search')
     @patch('utilities.file_io.write_file')
     def test_scrape_skip_submissions_past_end_date(self, mock_write, mock_search):
-        timestamps = self.generate_timestamps([-1, 0, 1])
+        deltas = [-1, 0, 1]
+        timestamps = self.generate_timestamps(deltas)
         mock_search.return_value = iter(self.get_item_mock(timestamps))
 
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
             scraper.scrape('test', self.last_week_time, self.current_time, '')
             self.assert_scrape_calls(scrape_spy, ['', 't3_test2'])
+
+        dates = self.generate_dates(deltas)
         mock_write.assert_has_calls([
-            call('posts/test', f'{timestamps[2]} - t3_test2', f'test title\n\n\ntest contents')
+            call(f'posts/test/{dates[2]}', 't3_test2', f'test title\n\n\ntest contents')
         ])
 
     @patch.object(RedditAPI, 'search')
     @patch('utilities.file_io.write_file')
     def test_scrape_stop_before_start_date(self, mock_write, mock_search):
-        timestamps = self.generate_timestamps([1, 8])
+        deltas = [1, 8]
+        timestamps = self.generate_timestamps(deltas)
         mock_search.return_value = iter(self.get_item_mock(timestamps))
 
         scraper = RedditScraper()
         with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
             scraper.scrape('test', self.last_week_time, self.current_time, '')
             self.assert_scrape_calls(scrape_spy, '')
+
+        dates = self.generate_dates(deltas)
         mock_write.assert_has_calls([
-            call('posts/test', f'{timestamps[0]} - t3_test0', f'test title\n\n\ntest contents')
+            call(f'posts/test/{dates[0]}', 't3_test0', f'test title\n\n\ntest contents')
         ])
 
     if __name__ == '__main__':

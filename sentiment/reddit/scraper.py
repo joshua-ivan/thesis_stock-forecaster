@@ -1,4 +1,6 @@
 from sentiment.reddit.api import RedditAPI
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from utilities import file_io
 import logging
 
@@ -13,7 +15,8 @@ def setup_reddit_logger():
 
 
 class RedditScraper:
-    def __init__(self):
+    def __init__(self, timezone=None):
+        self.timezone = ZoneInfo(timezone) if timezone is not None else None
         self.api = RedditAPI()
         setup_reddit_logger()
 
@@ -27,8 +30,9 @@ class RedditScraper:
             else:
                 last_fullname = submission.fullname
                 if last_timestamp < end_date:
-                    file_io.write_file(f'posts/{query}',
-                                       f'{submission.created_utc} - {submission.fullname}',
+                    date = datetime.fromtimestamp(int(submission.created_utc), tz=self.timezone).date()
+                    file_io.write_file(f'posts/{query}/{date}',
+                                       f'{submission.fullname}',
                                        f'{submission.title}\n\n\n{submission.selftext}')
         if last_fullname != after:
             self.scrape(query, start_date, end_date, last_fullname)
