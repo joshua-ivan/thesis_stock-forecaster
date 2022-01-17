@@ -1,3 +1,4 @@
+from multiprocessing import Pool, cpu_count
 from utilities import file_io
 import pandas
 import re
@@ -33,7 +34,10 @@ class SentimentCalculator:
         }
 
 
-def process_posts(directory, date):
+def process_posts(directory):
+    subdirectories = directory.split('/')
+    query = subdirectories[1]
+    date = subdirectories[2]
     sentiment_calculator = SentimentCalculator()
 
     sentiment_data = pandas.DataFrame(columns=['Filename', 'Length', 'Negative', 'Positive'])
@@ -47,16 +51,24 @@ def process_posts(directory, date):
             'Length': counts['length'],
             'Negative': counts['negative'],
             'Positive': counts['positive'],
-            'Sentiment': counts['positive'] - counts['negative'] / counts['length']
+            'Sentiment': (counts['positive'] - counts['negative']) / counts['length']
         }, ignore_index=True)
 
-    sentiment_data.to_csv(f'counts/{directory}.csv', index=False)
+    output_dir = 'counts'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    sentiment_data.to_csv(f'counts/{query}.csv', index=False)
 
 
 def execute():
     base_dir = 'clean_posts'
+    full_paths = []
     post_directories = os.listdir(base_dir)
     for post_dir in post_directories:
-        date_dirs = os.listdir(post_dir)
+        date_dirs = os.listdir(f'{base_dir}/{post_dir}')
         for date_dir in date_dirs:
-            process_posts(f'{base_dir}/{post_dir}/{date_dir}', str(date_dir))
+            full_paths.append(f'{base_dir}/{post_dir}/{date_dir}')
+
+    thread_pool = Pool(processes=cpu_count())
+    thread_pool.map(process_posts, full_paths)
+    thread_pool.terminate()
