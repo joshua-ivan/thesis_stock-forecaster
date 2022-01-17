@@ -27,10 +27,12 @@ class SentimentCalculator:
                 negative = negative + int(lookup['Negative'])
                 positive = positive + int(lookup['Positive'])
 
+        post_length = len(word_list)
         return {
-            'length': len(word_list),
+            'length': post_length,
             'negative': negative,
-            'positive': positive
+            'positive': positive,
+            'sentiment': (positive - negative) / post_length
         }
 
 
@@ -51,7 +53,7 @@ def process_posts(directory):
             'Length': counts['length'],
             'Negative': counts['negative'],
             'Positive': counts['positive'],
-            'Sentiment': (counts['positive'] - counts['negative']) / counts['length']
+            'Sentiment': counts['sentiment']
         }, ignore_index=True)
 
     output_dir = 'counts'
