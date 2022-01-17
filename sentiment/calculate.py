@@ -33,7 +33,7 @@ class SentimentCalculator:
         }
 
 
-def process_posts(directory):
+def process_posts(directory, date):
     sentiment_calculator = SentimentCalculator()
 
     sentiment_data = pandas.DataFrame(columns=['Filename', 'Length', 'Negative', 'Positive'])
@@ -43,9 +43,11 @@ def process_posts(directory):
         counts = sentiment_calculator.count_words(post, file)
         sentiment_data = sentiment_data.append({
             'Filename': file,
+            'Date': date,
             'Length': counts['length'],
             'Negative': counts['negative'],
-            'Positive': counts['positive']
+            'Positive': counts['positive'],
+            'Sentiment': counts['positive'] - counts['negative'] / counts['length']
         }, ignore_index=True)
 
     sentiment_data.to_csv(f'counts/{directory}.csv', index=False)
@@ -57,4 +59,4 @@ def execute():
     for post_dir in post_directories:
         date_dirs = os.listdir(post_dir)
         for date_dir in date_dirs:
-            process_posts(f'{base_dir}/{post_dir}/{date_dir}')
+            process_posts(f'{base_dir}/{post_dir}/{date_dir}', str(date_dir))
