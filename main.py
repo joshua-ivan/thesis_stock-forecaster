@@ -6,8 +6,8 @@ def main():
     # build_database.execute()
     # get_stock_history.execute()
     # forecaster.execute()
-    # clean_posts.execute()
-    calculate.execute()
+    clean_posts.execute()
+    # calculate.execute()
 
 
 if __name__ == '__main__':

@@ -55,4 +55,6 @@ def execute():
     base_dir = 'clean_posts'
     post_directories = os.listdir(base_dir)
     for post_dir in post_directories:
-        process_posts(f'{base_dir}/{post_dir}')
+        date_dirs = os.listdir(post_dir)
+        for date_dir in date_dirs:
+            process_posts(f'{base_dir}/{post_dir}/{date_dir}')

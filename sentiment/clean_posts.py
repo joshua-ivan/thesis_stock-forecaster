@@ -13,8 +13,10 @@ def strip_nonalphanumeric_characters(string):
 def execute():
     post_directories = os.listdir('posts')
     for post_dir in post_directories:
-        files = os.listdir(f'posts/{post_dir}')
-        for file in files:
-            post = file_io.read_file(f'posts/{post_dir}/{file}')
-            clean_post = strip_nonalphanumeric_characters(post)
-            file_io.write_file(f'clean_posts/{post_dir}', file, clean_post)
+        dates = os.listdir(f'posts/{post_dir}')
+        for date in dates:
+            files = os.listdir(f'posts/{post_dir}/{date}')
+            for file in files:
+                post = file_io.read_file(f'posts/{post_dir}/{date}/{file}')
+                clean_post = strip_nonalphanumeric_characters(post)
+                file_io.write_file(f'clean_posts/{post_dir}/{date}', file, clean_post)
