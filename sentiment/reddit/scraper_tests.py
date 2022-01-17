@@ -2,6 +2,7 @@ from unittest.mock import patch, call
 from sentiment.reddit.api import RedditAPI
 from sentiment.reddit.scraper import RedditScraper
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import unittest
 import time
 
@@ -121,6 +122,30 @@ class RedditScraperTests(unittest.TestCase):
             self.assert_scrape_calls(scrape_spy, '')
 
         dates = self.generate_dates(deltas)
+        mock_write.assert_has_calls([
+            call(f'posts/test/{dates[0]}', 't3_test0', f'test title\n\n\ntest contents')
+        ])
+
+    @patch.object(RedditAPI, 'search')
+    @patch('utilities.file_io.write_file')
+    def test_injectable_timezone(self, mock_write, mock_search):
+        self.current_time = datetime(year=2022, month=1, day=16,
+                                     hour=0, minute=0, second=0, microsecond=0,
+                                     tzinfo=ZoneInfo('US/Eastern'), fold=0).timestamp()
+        self.current_date = datetime.fromtimestamp(int(self.current_time)).date()
+        self.last_week_time = self.current_time - timedelta(days=7).total_seconds()
+
+        deltas = [1]
+        timestamps = self.generate_timestamps(deltas)
+        mock_search.return_value = iter(self.get_item_mock(timestamps))
+
+        scraper = RedditScraper('US/Pacific')
+        with patch.object(scraper, 'scrape', wraps=scraper.scrape) as scrape_spy:
+            scraper.scrape('test', self.last_week_time, self.current_time, '')
+            self.assert_scrape_calls(scrape_spy, '')
+
+        dates = self.generate_dates(deltas)
+        self.assertEqual(str(dates[0]), '2022-01-14')
         mock_write.assert_has_calls([
             call(f'posts/test/{dates[0]}', 't3_test0', f'test title\n\n\ntest contents')
         ])
