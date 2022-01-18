@@ -37,7 +37,7 @@ def calculate_percent_error(expected, actual):
     check_float(expected)
     check_float(actual)
 
-    return ((actual - expected) / actual) * 100.000
+    return ((actual - expected) / actual) * 100
 
 
 def evaluate_forecaster():
@@ -62,7 +62,7 @@ def evaluate_forecaster():
 
 
 def execute():
-    output_frame = pandas.DataFrame(columns=['Ticker', 'Projection'])
+    output_frame = pandas.DataFrame(columns=['Ticker', 'Projection', 'Profit/Loss'])
     for stock in stocks:
         ticker = stock['ticker']
 
@@ -70,7 +70,8 @@ def execute():
         projection = forecast(price_history)
         output_frame = output_frame.append({
             'Ticker': ticker,
-            'Projection': projection},
+            'Projection': projection,
+            'Profit/Loss': projection / price_history[-1]},
             ignore_index=True)
 
     output_frame.to_csv('projection.csv')
