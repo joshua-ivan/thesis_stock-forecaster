@@ -7,3 +7,27 @@ class ForecasterTests(unittest.TestCase):
         expected = [336.320007, 334.75, 329.01001, 316.380005, 313.880005, 313.649994]
         actual = forecaster.extract_stock_prices('__test/MOCK')
         self.assertTrue((expected == actual).all())
+
+    def test_extract_stock_images_csv_not_found(self):
+        try:
+            forecaster.extract_stock_prices('TEST')
+            self.fail()
+        except FileNotFoundError as error:
+            self.assertEqual(str(error), 'No price history found for TEST')
+
+    def test_calculate_percent_error(self):
+        self.assertEqual(1, forecaster.calculate_percent_error(99, 100))
+        self.assertEqual(5, forecaster.calculate_percent_error(95, 100))
+
+    def test_calculate_percent_error_non_numeric_args(self):
+        try:
+            forecaster.calculate_percent_error('fish', 2)
+            self.fail()
+        except TypeError as error:
+            self.assertEqual(str(error), 'calculate_percent_error: \'fish\' is not a real number')
+
+        try:
+            forecaster.calculate_percent_error(2, 'chips')
+            self.fail()
+        except TypeError as error:
+            self.assertEqual(str(error), 'calculate_percent_error: \'chips\' is not a real number')

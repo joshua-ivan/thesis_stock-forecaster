@@ -3,6 +3,7 @@ import pmdarima
 import arch
 import pandas
 import numpy
+import os
 
 
 def forecast(history):
@@ -19,8 +20,24 @@ def forecast(history):
 
 
 def extract_stock_prices(ticker):
+    file = f'prices/{ticker}.csv'
+    if not os.path.exists(file):
+        raise FileNotFoundError(f'No price history found for {ticker}')
+
     price_history = pandas.read_csv(f'prices/{ticker}.csv', usecols=['Date', 'Adj Close'])
     return price_history['Adj Close'].to_numpy()
+
+
+def calculate_percent_error(expected, actual):
+    def check_float(item):
+        try:
+            float(item)
+        except ValueError:
+            raise TypeError(f'calculate_percent_error: \'{item}\' is not a real number')
+    check_float(expected)
+    check_float(actual)
+
+    return ((actual - expected) / actual) * 100.000
 
 
 def evaluate_forecaster():
@@ -31,7 +48,7 @@ def evaluate_forecaster():
         price_history = extract_stock_prices(ticker)
         expected = forecast(price_history[0:-1])
         actual = price_history[-1]
-        error = ((actual - expected) / actual) * 100
+        error = calculate_percent_error(expected, actual)
         output_frame = output_frame.append({
             'Ticker': ticker,
             'Expected': expected,
@@ -45,4 +62,15 @@ def evaluate_forecaster():
 
 
 def execute():
-    evaluate_forecaster()
+    output_frame = pandas.DataFrame(columns=['Ticker', 'Projection'])
+    for stock in stocks:
+        ticker = stock['ticker']
+
+        price_history = extract_stock_prices(ticker)
+        projection = forecast(price_history)
+        output_frame = output_frame.append({
+            'Ticker': ticker,
+            'Projection': projection},
+            ignore_index=True)
+
+    output_frame.to_csv('projection.csv')
