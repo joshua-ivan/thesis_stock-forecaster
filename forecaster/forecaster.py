@@ -23,7 +23,7 @@ def extract_stock_prices(ticker):
     return price_history['Adj Close'].to_numpy()
 
 
-def execute():
+def evaluate_forecaster():
     output_frame = pandas.DataFrame(columns=['Ticker', 'Expected', 'Actual', 'Error'])
     for stock in stocks:
         ticker = stock['ticker']
@@ -41,4 +41,8 @@ def execute():
 
     errors = output_frame['Error'].to_numpy()
     print(f'Mean Squared Percent Error: {numpy.square(errors).mean()}\n')
-    output_frame.to_csv('forecast.csv')
+    output_frame.to_csv('forecaster_evaluation.csv')
+
+
+def execute():
+    evaluate_forecaster()
