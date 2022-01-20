@@ -6,6 +6,9 @@ import warnings
 import os
 
 
+WORD_COUNTS_DIR = 'counts'
+
+
 class SentimentCalculator:
     def __init__(self):
         self.dictionary = pandas.read_csv('LoughranMcDonald_MasterDictionary_2020__condensed.csv')
@@ -55,11 +58,33 @@ def process_posts(directory):
                 'Sentiment': counts['sentiment']
             }, ignore_index=True)
 
-    output_dir = f'counts'
     query = directory.split('/')[1]
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    sentiment_data.to_csv(f'{output_dir}/{query}.csv', index=False)
+    if not os.path.exists(WORD_COUNTS_DIR):
+        os.makedirs(WORD_COUNTS_DIR)
+    sentiment_data.to_csv(f'{WORD_COUNTS_DIR}/{query}.csv', index=False)
+
+
+def query_to_ticker(string):
+    tokens = string.split('"')
+    warning_message = f'Query {string} is malformed'
+    if len(tokens) < 2 or tokens[1] == "" or tokens[1].isspace():
+        warnings.warn(warning_message)
+        return tokens[0]
+    else:
+        return tokens[1]
+
+
+def aggregate_sentiment():
+    mean_sentiments = pandas.DataFrame(columns=['Ticker', 'Sentiment'])
+
+    files = os.listdir(WORD_COUNTS_DIR)
+    for file in files:
+        mean_sentiments = mean_sentiments.append({
+            'Ticker': query_to_ticker(file),
+            'Sentiment': pandas.read_csv(f'{WORD_COUNTS_DIR}/{file}')['Sentiment'].mean()
+        }, ignore_index=True)
+
+    mean_sentiments.to_csv('sentiment.csv', index=False)
 
 
 def construct_post_paths(base_dir):
@@ -75,3 +100,5 @@ def execute():
     thread_pool = Pool(processes=cpu_count())
     thread_pool.map(process_posts, full_paths)
     thread_pool.terminate()
+
+    aggregate_sentiment()

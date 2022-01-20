@@ -1,11 +1,17 @@
+# IDE
 .idea/
 venv/
 __pycache__
+
+# Raw input data
 posts/
 prices/
+LoughranMcDonald_MasterDictionary_*.csv
+
+# Intermediate date
 clean_posts/
 counts/
-LoughranMcDonald_MasterDictionary_*.csv
 forecast.csv
 projection.csv
+sentiment.csv
 

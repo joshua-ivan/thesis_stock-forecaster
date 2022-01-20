@@ -1,4 +1,4 @@
-from sentiment.calculate import SentimentCalculator, construct_post_paths
+from sentiment.calculate import SentimentCalculator, construct_post_paths, query_to_ticker
 from unittest.mock import patch
 import unittest
 import warnings
@@ -47,3 +47,14 @@ class RedditScraperTests(unittest.TestCase):
     def test_construct_post_paths(self, mock_listdir):
         mock_listdir.return_value = ['foo', 'bar', 'baz']
         self.assertEqual(construct_post_paths('test'), ['test/foo', 'test/bar', 'test/baz'])
+
+    def test_query_to_ticker(self):
+        self.assertEqual('TEST', query_to_ticker('"TEST" OR "TestQuery"'))
+
+    @patch('warnings.warn')
+    def test_query_to_ticker_malformed_query_format(self, mock_warn):
+        warnings.filterwarnings('ignore', 'Query.*')
+        queries = ['test', 'test"', 'test"  ']
+        for query in queries:
+            self.assertEqual(query_to_ticker(query), 'test')
+            mock_warn.assert_called_with(f'Query {query} is malformed')
