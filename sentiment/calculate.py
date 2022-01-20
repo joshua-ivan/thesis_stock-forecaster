@@ -37,40 +37,41 @@ class SentimentCalculator:
 
 
 def process_posts(directory):
-    subdirectories = directory.split('/')
-    query = subdirectories[1]
-    date = subdirectories[2]
     sentiment_calculator = SentimentCalculator()
 
-    sentiment_data = pandas.DataFrame(columns=['Filename', 'Length', 'Negative', 'Positive'])
-    files = os.listdir(directory)
-    for file in files:
-        post = file_io.read_file(f'{directory}/{file}')
-        counts = sentiment_calculator.count_words(post, file)
-        sentiment_data = sentiment_data.append({
-            'Filename': file,
-            'Date': date,
-            'Length': counts['length'],
-            'Negative': counts['negative'],
-            'Positive': counts['positive'],
-            'Sentiment': counts['sentiment']
-        }, ignore_index=True)
+    sentiment_data = pandas.DataFrame(columns=['Filename', 'Date', 'Length', 'Negative', 'Positive', 'Sentiment'])
+    dates = os.listdir(directory)
+    for date in dates:
+        files = os.listdir(f'{directory}/{date}')
+        for file in files:
+            post = file_io.read_file(f'{directory}/{date}/{file}')
+            counts = sentiment_calculator.count_words(post, file)
+            sentiment_data = sentiment_data.append({
+                'Filename': file,
+                'Date': date,
+                'Length': counts['length'],
+                'Negative': counts['negative'],
+                'Positive': counts['positive'],
+                'Sentiment': counts['sentiment']
+            }, ignore_index=True)
 
-    output_dir = 'counts'
+    output_dir = f'counts'
+    query = directory.split('/')[1]
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    sentiment_data.to_csv(f'counts/{query}.csv', index=False)
+    sentiment_data.to_csv(f'{output_dir}/{query}.csv', index=False)
+
+
+def construct_post_paths(base_dir):
+    paths = []
+    queries = os.listdir(base_dir)
+    for query in queries:
+        paths.append(f'{base_dir}/{query}')
+    return paths
 
 
 def execute():
-    base_dir = 'clean_posts'
-    full_paths = []
-    post_directories = os.listdir(base_dir)
-    for post_dir in post_directories:
-        date_dirs = os.listdir(f'{base_dir}/{post_dir}')
-        for date_dir in date_dirs:
-            full_paths.append(f'{base_dir}/{post_dir}/{date_dir}')
-
+    full_paths = construct_post_paths('clean_posts')
     thread_pool = Pool(processes=cpu_count())
     thread_pool.map(process_posts, full_paths)
     thread_pool.terminate()

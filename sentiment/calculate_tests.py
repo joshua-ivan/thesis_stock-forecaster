@@ -1,4 +1,4 @@
-from sentiment.calculate import SentimentCalculator
+from sentiment.calculate import SentimentCalculator, construct_post_paths
 from unittest.mock import patch
 import unittest
 import warnings
@@ -42,3 +42,8 @@ class RedditScraperTests(unittest.TestCase):
             self.fail()
         except TypeError as error:
             self.assertEqual(str(error), 'SentimentCalculator.count_words expects an input string')
+
+    @patch('os.listdir')
+    def test_construct_post_paths(self, mock_listdir):
+        mock_listdir.return_value = ['foo', 'bar', 'baz']
+        self.assertEqual(construct_post_paths('test'), ['test/foo', 'test/bar', 'test/baz'])
