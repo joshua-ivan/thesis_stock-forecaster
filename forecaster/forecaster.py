@@ -1,4 +1,5 @@
 from config import stocks
+from utilities.input_validation import check_float
 import pmdarima
 import arch
 import pandas
@@ -29,13 +30,8 @@ def extract_stock_prices(ticker):
 
 
 def calculate_percent_error(expected, actual):
-    def check_float(item):
-        try:
-            float(item)
-        except ValueError:
-            raise TypeError(f'calculate_percent_error: \'{item}\' is not a real number')
-    check_float(expected)
-    check_float(actual)
+    check_float(expected, f'calculate_percent_error: \'{expected}\' is not a real number')
+    check_float(actual, f'calculate_percent_error: \'{actual}\' is not a real number')
 
     return ((actual - expected) / actual) * 100
 

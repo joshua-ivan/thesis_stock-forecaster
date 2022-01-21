@@ -20,14 +20,15 @@ class ForecasterTests(unittest.TestCase):
         self.assertEqual(5, forecaster.calculate_percent_error(95, 100))
 
     def test_calculate_percent_error_non_numeric_args(self):
+        expected, actual = 'fish', 'chips'
         try:
-            forecaster.calculate_percent_error('fish', 2)
+            forecaster.calculate_percent_error(expected, 2)
             self.fail()
         except TypeError as error:
-            self.assertEqual(str(error), 'calculate_percent_error: \'fish\' is not a real number')
+            self.assertEqual(str(error), f'calculate_percent_error: \'{expected}\' is not a real number')
 
         try:
-            forecaster.calculate_percent_error(2, 'chips')
+            forecaster.calculate_percent_error(2, actual)
             self.fail()
         except TypeError as error:
-            self.assertEqual(str(error), 'calculate_percent_error: \'chips\' is not a real number')
+            self.assertEqual(str(error), f'calculate_percent_error: \'{actual}\' is not a real number')
