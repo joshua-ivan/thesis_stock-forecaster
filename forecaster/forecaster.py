@@ -70,4 +70,4 @@ def execute():
             'Profit/Loss': projection / price_history[-1]},
             ignore_index=True)
 
-    output_frame.to_csv('projection.csv')
+    output_frame.to_csv('projection.csv', index=False)

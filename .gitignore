@@ -15,3 +15,6 @@ forecast.csv
 projection.csv
 sentiment.csv
 
+# Final data
+decision.csv
+

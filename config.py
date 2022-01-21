@@ -120,3 +120,8 @@ stocks = [
         'company': 'Walmart'
     },
 ]
+
+thresholds = {
+    'positive': 0.5,
+    'negative': -0.5
+}

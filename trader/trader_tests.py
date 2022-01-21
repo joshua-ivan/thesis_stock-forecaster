@@ -1,8 +1,12 @@
-from trader.trader import zero_one_normalization
+from trader.trader import zero_one_normalization, polarity_preserving_normalization, extract_cell, trade_decision
+from config import thresholds
 import unittest
+import pandas
 
 
 class TraderTests(unittest.TestCase):
+    MOCKS_DIR = 'mock_data/trader'
+
     def test_zero_one_normalization(self):
         minimum, maximum = 0, 10
         self.assertEqual(zero_one_normalization(minimum, maximum)(4), .4)
@@ -31,12 +35,65 @@ class TraderTests(unittest.TestCase):
             zero_one_normalization(minimum, maximum)(-1)
             self.fail()
         except ValueError as error:
-            self.assertEqual(str(error),
-                             f'zero_one_normalization: \'-1\' is out of bounds [{minimum}, {maximum}]')
+            self.assertEqual(str(error), f'zero_one_normalization: \'-1\' is out of bounds [{minimum}, {maximum}]')
 
         try:
             zero_one_normalization(minimum, maximum)(11)
             self.fail()
         except ValueError as error:
-            self.assertEqual(str(error),
-                             f'zero_one_normalization: \'11\' is out of bounds [{minimum}, {maximum}]')
+            self.assertEqual(str(error), f'zero_one_normalization: \'11\' is out of bounds [{minimum}, {maximum}]')
+
+    def test_polarity_preserving_normalization(self):
+        expected = [0, 1, 0.9, 0, -1, -0.3]
+        actual = polarity_preserving_normalization(
+            f'{self.MOCKS_DIR}/polarity_preserving_normalization/normal.csv', 'Value')
+        self.assertEqual(expected, actual['Value'].array)
+
+    def test_extract_cell(self):
+        data = pandas.read_csv(f'{self.MOCKS_DIR}/extract_cell/normal.csv')
+        self.assertEqual(extract_cell(data, 'Food', 'Beef', 'Drink'), 'Wine')
+        self.assertEqual(extract_cell(data, 'Drink', 'Rum', 'Food'), 'Fish')
+
+    def test_extract_cell_no_match(self):
+        data = pandas.read_csv(f'{self.MOCKS_DIR}/extract_cell/normal.csv')
+        self.assertEqual(extract_cell(data, 'Food', 'Chicken', 'Drink'), None)
+
+    def test_trade_decision(self):
+        self.assertEqual(trade_decision(1.0, -1.0), 'SELL')
+        self.assertEqual(trade_decision(thresholds['positive'], thresholds['negative']), 'SELL')
+        self.assertEqual(trade_decision(0.75, -0.75), 'SELL')
+
+        self.assertEqual(trade_decision(-1.0, 1.0), 'BUY')
+        self.assertEqual(trade_decision(thresholds['negative'], thresholds['positive']), 'BUY')
+        self.assertEqual(trade_decision(-0.75, 0.75), 'BUY')
+
+        self.assertEqual(trade_decision(0.0, 0.0), 'HOLD')
+        self.assertEqual(trade_decision(thresholds['positive'] - 0.01, thresholds['negative'] + 0.01), 'HOLD')
+        self.assertEqual(trade_decision(thresholds['negative'] + 0.01, thresholds['positive'] - 0.01), 'HOLD')
+
+    def test_trade_decision_out_of_bounds(self):
+        minimum, maximum = -1.0, 1.0
+
+        score = 2.0
+        try:
+            trade_decision(score, 0.0)
+            self.fail()
+        except ValueError as error:
+            self.assertEqual(str(error), f'trade_decision: \'{score}\' is out of bounds [{minimum}, {maximum}]')
+        try:
+            trade_decision(0.0, score)
+            self.fail()
+        except ValueError as error:
+            self.assertEqual(str(error), f'trade_decision: \'{score}\' is out of bounds [{minimum}, {maximum}]')
+
+        score = -2.0
+        try:
+            trade_decision(score, 0.0)
+            self.fail()
+        except ValueError as error:
+            self.assertEqual(str(error), f'trade_decision: \'{score}\' is out of bounds [{minimum}, {maximum}]')
+        try:
+            trade_decision(0.0, score)
+            self.fail()
+        except ValueError as error:
+            self.assertEqual(str(error), f'trade_decision: \'{score}\' is out of bounds [{minimum}, {maximum}]')
