@@ -22,13 +22,13 @@ def polarity_preserving_normalization(filename, column):
 
     positive[column] = positive[column].apply(
         zero_one_normalization(
-            positive[column].min(),
+            0.0,
             positive[column].max()))
 
     negative[column] = negative[column].apply(
         zero_one_normalization(
             negative[column].min(),
-            negative[column].max()))
+            0.0))
     negative[column] = negative[column] - 1
 
     return positive.merge(negative, how='outer')

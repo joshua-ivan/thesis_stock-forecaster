@@ -1,3 +1,5 @@
+import numpy as np
+
 from trader.trader import zero_one_normalization, polarity_preserving_normalization, extract_cell, trade_decision
 from config import thresholds
 import unittest
@@ -44,10 +46,11 @@ class TraderTests(unittest.TestCase):
             self.assertEqual(str(error), f'zero_one_normalization: \'11\' is out of bounds [{minimum}, {maximum}]')
 
     def test_polarity_preserving_normalization(self):
-        expected = [0, 1, 0.9, 0, -1, -0.3]
+        expected = [0.05, 1.00, 0.90, -0.10, -1.00, -0.30]
         actual = polarity_preserving_normalization(
-            f'{self.MOCKS_DIR}/polarity_preserving_normalization/normal.csv', 'Value')
-        self.assertEqual(expected, actual['Value'].array)
+            f'{self.MOCKS_DIR}/polarity_preserving_normalization/normal.csv', 'Value')['Value'].to_numpy()
+        round_to_hundredths = np.vectorize(lambda x: round(x, 2))
+        self.assertTrue((expected == round_to_hundredths(actual)).all())
 
     def test_extract_cell(self):
         data = pandas.read_csv(f'{self.MOCKS_DIR}/extract_cell/normal.csv')
