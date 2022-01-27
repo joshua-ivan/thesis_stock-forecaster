@@ -23,6 +23,6 @@ def execute():
         ticker = stock['ticker']
 
         stock_history = requests.get(f'https://query1.finance.yahoo.com/v7/finance/download/{ticker}',
-                                     headers=headers, params=build_query_params(time.time(), 7))
+                                     headers=headers, params=build_query_params(time.time(), 730))
 
         file_io.write_file('prices', f'{ticker}.csv', stock_history.text)
