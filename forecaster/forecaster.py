@@ -6,6 +6,8 @@ import pandas
 import numpy
 import os
 
+PRICES_DIR = 'prices'
+
 
 def forecast(history):
     arima_model = pmdarima.auto_arima(history)
@@ -20,12 +22,12 @@ def forecast(history):
     return predicted_mean + predicted_variance
 
 
-def extract_stock_prices(ticker):
-    file = f'prices/{ticker}.csv'
+def extract_stock_prices(directory, ticker):
+    file = f'{directory}/{ticker}.csv'
     if not os.path.exists(file):
         raise FileNotFoundError(f'No price history found for {ticker}')
 
-    price_history = pandas.read_csv(f'prices/{ticker}.csv', usecols=['Date', 'Adj Close'])
+    price_history = pandas.read_csv(f'{directory}/{ticker}.csv', usecols=['Date', 'Adj Close'])
     return price_history['Adj Close'].to_numpy()
 
 
@@ -41,7 +43,7 @@ def evaluate_forecaster():
     for stock in stocks:
         ticker = stock['ticker']
 
-        price_history = extract_stock_prices(ticker)
+        price_history = extract_stock_prices(PRICES_DIR, ticker)
         expected = forecast(price_history[0:-1])
         actual = price_history[-1]
         error = calculate_percent_error(expected, actual)
@@ -62,7 +64,7 @@ def execute():
     for stock in stocks:
         ticker = stock['ticker']
 
-        price_history = extract_stock_prices(ticker)
+        price_history = extract_stock_prices(PRICES_DIR, ticker)
         projection = forecast(price_history)
         output_frame = output_frame.append({
             'Ticker': ticker,

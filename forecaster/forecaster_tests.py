@@ -3,14 +3,16 @@ import unittest
 
 
 class ForecasterTests(unittest.TestCase):
+    MOCK_DIR = 'mock_data/forecaster'
+
     def test_extract_stock_prices(self):
         expected = [336.320007, 334.75, 329.01001, 316.380005, 313.880005, 313.649994]
-        actual = forecaster.extract_stock_prices('__test/MOCK')
+        actual = forecaster.extract_stock_prices(self.MOCK_DIR, 'MOCK')
         self.assertTrue((expected == actual).all())
 
     def test_extract_stock_images_csv_not_found(self):
         try:
-            forecaster.extract_stock_prices('TEST')
+            forecaster.extract_stock_prices(self.MOCK_DIR, 'TEST')
             self.fail()
         except FileNotFoundError as error:
             self.assertEqual(str(error), 'No price history found for TEST')

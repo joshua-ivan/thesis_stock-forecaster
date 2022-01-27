@@ -20,7 +20,7 @@ class RedditScraper:
         self.api = RedditAPI()
         setup_reddit_logger()
 
-    def scrape(self, query, start_date, end_date, after):
+    def search_all(self, query, start_date, end_date, after):
         last_fullname = after
         submissions = self.api.search(query, last_fullname)
         for submission in submissions:
@@ -35,4 +35,4 @@ class RedditScraper:
                                        f'{submission.fullname}',
                                        f'{submission.title}\n\n\n{submission.selftext}')
         if last_fullname != after:
-            self.scrape(query, start_date, end_date, last_fullname)
+            self.search_all(query, start_date, end_date, last_fullname)

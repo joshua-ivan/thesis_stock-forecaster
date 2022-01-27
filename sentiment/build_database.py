@@ -23,4 +23,4 @@ def execute():
         end_date = time.time()
         start_date = end_date - timedelta(days=730).total_seconds()
 
-        reddit_scraper.scrape(query, start_date, end_date, '')
+        reddit_scraper.search_all(query, start_date, end_date, '')
