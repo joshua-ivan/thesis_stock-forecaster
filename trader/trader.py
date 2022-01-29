@@ -1,4 +1,5 @@
 from utilities.input_validation import check_float, check_bounds
+from utilities.pandas_util import extract_cell
 from config import stocks, thresholds
 import pandas
 
@@ -32,13 +33,6 @@ def polarity_preserving_normalization(filename, column):
     negative[column] = negative[column] - 1
 
     return positive.merge(negative, how='outer')
-
-
-def extract_cell(data, index, row, column):
-    series = data.loc[data[index] == row].reset_index(drop=True)[column]
-    if len(series) <= 0:
-        return None
-    return series[0]
 
 
 def trade_decision(sentiment, projection):
