@@ -5,11 +5,7 @@ import unittest
 
 class MockSubmission:
     def __init__(self, subreddit_name):
-        class MockSubreddit:
-            def __init__(self, name):
-                self.name = name
-
-        self.subreddit = MockSubreddit(subreddit_name)
+        self.subreddit_name_prefixed = subreddit_name
 
 
 class CountSubredditTests(unittest.TestCase):

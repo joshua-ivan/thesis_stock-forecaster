@@ -6,15 +6,10 @@ __pycache__
 # Raw input data
 posts/
 prices/
-LoughranMcDonald_MasterDictionary_*.csv
 
 # Intermediate date
 clean_posts/
 counts/
-forecast.csv
-projection.csv
-sentiment.csv
 
-# Final data
-decision.csv
-
+# Output
+*.csv
