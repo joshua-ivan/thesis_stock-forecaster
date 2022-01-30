@@ -17,3 +17,6 @@ class RedditAPI:
 
     def search(self, query, after):
         return self.reddit.subreddit("all").search(query=query, sort='new', params={'after': after})
+
+    def subreddit(self, sub, after):
+        return self.reddit.subreddit(sub).new(params={'after': after})
