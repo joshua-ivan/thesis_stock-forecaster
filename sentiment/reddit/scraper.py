@@ -20,9 +20,9 @@ class RedditScraper:
         self.api = RedditAPI()
         setup_reddit_logger()
 
-    def scrape(self, api_op, op_string, start_date, end_date, result_op, after):
+    def scrape(self, sub, query, start_date, end_date, result_op, after):
         last_fullname = after
-        submissions = api_op(op_string, last_fullname)
+        submissions = self.api.search_subreddit(sub, query, last_fullname)
         for submission in submissions:
             last_timestamp = submission.created_utc
             if last_timestamp <= start_date:
@@ -30,15 +30,9 @@ class RedditScraper:
             else:
                 last_fullname = submission.fullname
                 if last_timestamp < end_date:
-                    result_op(op_string, submission)
+                    result_op(query, submission)
         if last_fullname != after:
-            self.scrape(api_op, op_string, start_date, end_date, result_op, last_fullname)
-
-    def search_all(self, query, start_date, end_date, result_op, after):
-        self.scrape(self.api.search, query, start_date, end_date, result_op, after)
-
-    def subreddit(self, sub, start_date, end_date, result_op, after):
-        self.scrape(self.api.subreddit, sub, start_date, end_date, result_op, after)
+            self.scrape(sub, query, start_date, end_date, result_op, last_fullname)
 
     def write_post(self, op_string, submission):
         date = datetime.fromtimestamp(int(submission.created_utc), tz=self.timezone).date()

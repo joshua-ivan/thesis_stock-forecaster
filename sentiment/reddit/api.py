@@ -15,8 +15,8 @@ class RedditAPI:
     def __init__(self):
         self.reddit = praw.Reddit(requestor_class=JSONDebugRequestor) if config.debug_responses else praw.Reddit()
 
-    def search(self, query, after):
-        return self.reddit.subreddit("all").search(query=query, sort='new', params={'after': after})
+    def search_subreddit(self, sub, query, after):
+        return self.reddit.subreddit(sub).search(query=query, sort='new', params={'after': after})
 
-    def subreddit(self, sub, after):
-        return self.reddit.subreddit(sub).new(params={'after': after})
+    def search(self, query, after):
+        return self.search_subreddit('all', query, after)
