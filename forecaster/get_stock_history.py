@@ -1,4 +1,5 @@
-from config import stocks
+import config
+from config import stocks, raw_data_interval_days
 from utilities import file_io
 import requests
 import time
@@ -23,6 +24,6 @@ def execute():
         ticker = stock['ticker']
 
         stock_history = requests.get(f'https://query1.finance.yahoo.com/v7/finance/download/{ticker}',
-                                     headers=headers, params=build_query_params(time.time(), 365))
+                                     headers=headers, params=build_query_params(time.time(), raw_data_interval_days))
 
         file_io.write_file('prices', f'{ticker}.csv', stock_history.text)

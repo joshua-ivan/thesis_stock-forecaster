@@ -1,9 +1,13 @@
 from multiprocessing import Pool, cpu_count
+from utilities.input_validation import check_positive_int, check_isoformat_date_string, check_nonempty_string
 from utilities import file_io
+from collections import deque
+from datetime import date, timedelta
 import pandas
 import re
 import warnings
 import os
+import config
 
 
 WORD_COUNTS_DIR = 'counts'
@@ -38,20 +42,49 @@ class SentimentCalculator:
             'sentiment': (positive - negative) / post_length
         }
 
+    def aggregate(self, dataframe, end_date, timeframe_days, interval):
+        days_remaining = timeframe_days - interval
+        if days_remaining >= interval:
+            start_date = (date.fromisoformat(end_date) - timedelta(days=interval + 1)).isoformat()
+        else:
+            start_date = (date.fromisoformat(end_date) - timedelta(days=interval - days_remaining + 1)).isoformat()
+        pass
+
+
+def generate_aggregate_columns(end_date, timeframe_days, interval):
+    function_name = 'generate_aggregate_columns'
+    check_isoformat_date_string(
+        end_date, f'{function_name}: \'{end_date}\' (end_date) is not an ISO format date string')
+    check_positive_int(
+        timeframe_days, f'{function_name}: \'{timeframe_days}\' (timeframe_days) is not a positive integer')
+    check_positive_int(interval, f'{function_name}: \'{interval}\' (interval) is not a positive integer')
+
+    current_date = date.fromisoformat(end_date)
+    columns = deque([end_date])
+    days_remaining = timeframe_days - interval
+
+    while int(days_remaining / interval) > 0:
+        current_date = current_date - timedelta(days=interval)
+        columns.appendleft(str(current_date.isoformat()))
+        days_remaining = days_remaining - interval
+    columns.appendleft('Ticker')
+
+    return list(columns)
+
 
 def process_posts(directory):
     sentiment_calculator = SentimentCalculator()
 
     sentiment_data = pandas.DataFrame(columns=['Filename', 'Date', 'Length', 'Negative', 'Positive', 'Sentiment'])
-    dates = os.listdir(directory)
-    for date in dates:
-        files = os.listdir(f'{directory}/{date}')
+    date_dirs = os.listdir(directory)
+    for date_dir in date_dirs:
+        files = os.listdir(f'{directory}/{date_dir}')
         for file in files:
-            post = file_io.read_file(f'{directory}/{date}/{file}')
+            post = file_io.read_file(f'{directory}/{date_dir}/{file}')
             counts = sentiment_calculator.count_words(post, file)
             sentiment_data = sentiment_data.append({
                 'Filename': file,
-                'Date': date,
+                'Date': date_dir,
                 'Length': counts['length'],
                 'Negative': counts['negative'],
                 'Positive': counts['positive'],
