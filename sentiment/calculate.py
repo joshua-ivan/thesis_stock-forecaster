@@ -1,16 +1,10 @@
-from multiprocessing import Pool, cpu_count
-from utilities.input_validation import check_positive_int, check_isoformat_date_string, check_nonempty_string
-from utilities import file_io
-from collections import deque
-from datetime import date, timedelta
+from multiprocessing import Pool, Queue, cpu_count
+from utilities import file_io, date_util
+import config
 import pandas
 import re
 import warnings
 import os
-import config
-
-
-WORD_COUNTS_DIR = 'counts'
 
 
 class SentimentCalculator:
@@ -42,38 +36,12 @@ class SentimentCalculator:
             'sentiment': (positive - negative) / post_length
         }
 
-    def aggregate(self, dataframe, end_date, timeframe_days, interval):
-        days_remaining = timeframe_days - interval
-        if days_remaining >= interval:
-            start_date = (date.fromisoformat(end_date) - timedelta(days=interval + 1)).isoformat()
-        else:
-            start_date = (date.fromisoformat(end_date) - timedelta(days=interval - days_remaining + 1)).isoformat()
-        pass
 
-
-def generate_aggregate_columns(end_date, timeframe_days, interval):
-    function_name = 'generate_aggregate_columns'
-    check_isoformat_date_string(
-        end_date, f'{function_name}: \'{end_date}\' (end_date) is not an ISO format date string')
-    check_positive_int(
-        timeframe_days, f'{function_name}: \'{timeframe_days}\' (timeframe_days) is not a positive integer')
-    check_positive_int(interval, f'{function_name}: \'{interval}\' (interval) is not a positive integer')
-
-    current_date = date.fromisoformat(end_date)
-    columns = deque([end_date])
-    days_remaining = timeframe_days - interval
-
-    while int(days_remaining / interval) > 0:
-        current_date = current_date - timedelta(days=interval)
-        columns.appendleft(str(current_date.isoformat()))
-        days_remaining = days_remaining - interval
-    columns.appendleft('Ticker')
-
-    return list(columns)
-
-
-def process_posts(directory):
+def process_posts(arguments):
+    directory = arguments['full_paths']
+    aggregate_data = arguments['aggregate_data']
     sentiment_calculator = SentimentCalculator()
+    word_counts_dir = 'counts'
 
     sentiment_data = pandas.DataFrame(columns=['Filename', 'Date', 'Length', 'Negative', 'Positive', 'Sentiment'])
     date_dirs = os.listdir(directory)
@@ -92,9 +60,13 @@ def process_posts(directory):
             }, ignore_index=True)
 
     query = directory.split('/')[1]
-    if not os.path.exists(WORD_COUNTS_DIR):
-        os.makedirs(WORD_COUNTS_DIR)
-    sentiment_data.to_csv(f'{WORD_COUNTS_DIR}/{query}.csv', index=False)
+    if not os.path.exists(word_counts_dir):
+        os.makedirs(word_counts_dir)
+    sentiment_data.to_csv(f'{word_counts_dir}/{query}.csv', index=False)
+
+    aggregate_data.put(
+        aggregate_sentiment_bins(
+            query_to_ticker(query), sentiment_data, config.end_date, config.raw_data_interval_days, config.bin_size))
 
 
 def query_to_ticker(string):
@@ -107,17 +79,13 @@ def query_to_ticker(string):
         return tokens[1]
 
 
-def aggregate_sentiment():
-    mean_sentiments = pandas.DataFrame(columns=['Ticker', 'Sentiment'])
-
-    files = os.listdir(WORD_COUNTS_DIR)
-    for file in files:
-        mean_sentiments = mean_sentiments.append({
-            'Ticker': query_to_ticker(file),
-            'Sentiment': pandas.read_csv(f'{WORD_COUNTS_DIR}/{file}')['Sentiment'].mean()
-        }, ignore_index=True)
-
-    mean_sentiments.to_csv('sentiment.csv', index=False)
+def aggregate_sentiment_bins(ticker, dataframe, end_date, timeframe_days, interval):
+    bins = date_util.generate_bin_boundaries(end_date, timeframe_days, interval)
+    aggregates = [ticker]
+    for _bin in bins:
+        df_bin = dataframe[dataframe['Date'].between(_bin['start'], _bin['end'])]
+        aggregates.append(df_bin['Sentiment'].mean())
+    return aggregates
 
 
 def construct_post_paths(base_dir):
@@ -130,8 +98,17 @@ def construct_post_paths(base_dir):
 
 def execute():
     full_paths = construct_post_paths('clean_posts')
+    aggregate_data = Queue()
     thread_pool = Pool(processes=cpu_count())
-    thread_pool.map(process_posts, full_paths)
+    thread_pool.map(process_posts, {
+        'full_paths': full_paths,
+        'aggregate_data': aggregate_data
+    })
     thread_pool.terminate()
 
-    aggregate_sentiment()
+    aggregates = pandas.DataFrame(columns=date_util.generate_aggregate_columns(
+        config.end_date, config.raw_data_interval_days, config.bin_size))
+    while not aggregate_data.empty():
+        row = aggregate_data.get()
+        aggregates.iloc[len(aggregates)] = row
+    aggregates.to_csv('sentiment.csv', index=False)

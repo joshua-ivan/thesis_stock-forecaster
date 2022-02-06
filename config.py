@@ -127,6 +127,8 @@ end_date = '2022-01-30'
 
 raw_data_interval_days = 365
 
+bin_size = 7
+
 thresholds = {
     'positive': 0.5,
     'negative': -0.5
