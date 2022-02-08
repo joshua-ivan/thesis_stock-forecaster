@@ -64,6 +64,14 @@ class SentimentCalculator:
         return aggregates
 
 
+def construct_post_paths(base_dir):
+    paths = []
+    queries = os.listdir(base_dir)
+    for query in queries:
+        paths.append(f'{base_dir}/{query}')
+    return paths
+
+
 def process_posts(aggregate_data, directory):
     sentiment_calculator = SentimentCalculator()
 
@@ -93,12 +101,15 @@ def query_to_ticker(string):
         return tokens[1]
 
 
-def construct_post_paths(base_dir):
-    paths = []
-    queries = os.listdir(base_dir)
-    for query in queries:
-        paths.append(f'{base_dir}/{query}')
-    return paths
+def generate_aggregate_dataframe(columns, data_queue):
+    if str(type(data_queue)) != '<class \'multiprocessing.managers.AutoProxy[Queue]\'>':
+        raise TypeError('generate_aggregate_dataframe: given data is not a multiprocessing.Manager.Queue')
+
+    dataframe = pandas.DataFrame(columns=columns)
+    while not data_queue.empty():
+        row = data_queue.get()
+        dataframe.loc[len(dataframe)] = row
+    return dataframe
 
 
 def execute():
@@ -108,9 +119,6 @@ def execute():
     thread_pool.map(partial(process_posts, aggregate_data), full_paths)
     thread_pool.terminate()
 
-    aggregates = pandas.DataFrame(columns=date_util.generate_aggregate_columns(
-        config.end_date, config.raw_data_interval_days, config.bin_size))
-    while not aggregate_data.empty():
-        row = aggregate_data.get()
-        aggregates.loc[len(aggregates)] = row
-    aggregates.to_csv('sentiment.csv', index=False)
+    columns = date_util.generate_aggregate_columns(
+        config.end_date, config.raw_data_interval_days, config.bin_size)
+    generate_aggregate_dataframe(columns, aggregate_data).to_csv('sentiment.csv', index=False)

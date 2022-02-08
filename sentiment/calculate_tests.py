@@ -1,5 +1,6 @@
 import config
-from sentiment.calculate import SentimentCalculator, construct_post_paths, query_to_ticker, aggregate_sentiment_bins
+from sentiment.calculate import SentimentCalculator, construct_post_paths, query_to_ticker, generate_aggregate_dataframe
+from multiprocessing import Manager
 from unittest.mock import patch
 import unittest
 import warnings
@@ -80,3 +81,34 @@ class RedditScraperTests(unittest.TestCase):
         expected = ['TEST']
         actual = self.calculator.aggregate_by_bin('TEST', '2022-01-17', data_size=1, bin_size=1)
         self.assertEqual(expected, actual)
+
+    def test_generate_aggregate_dataframe(self):
+        columns = ['Ticker', '02-08-2022', '02-08-2022']
+        data = [
+            ['TSTA', '0.5', '-0.5'],
+            ['TSTB', '-0.5', '0.5'],
+            ['TSTC', '0.5', '0.5'],
+            ['TSTD', '-0.5', '-0.5']
+        ]
+        queue = Manager().Queue()
+        for row in data:
+            queue.put(row)
+
+        expected = pandas.DataFrame(data, columns=columns)
+        self.assertTrue(generate_aggregate_dataframe(columns, queue).equals(expected))
+
+    def test_generate_aggregate_dataframe_empty_queue(self):
+        columns = ['Ticker', '02-08-2022', '02-08-2022']
+        queue = Manager().Queue()
+
+        expected = pandas.DataFrame(columns=columns)
+        self.assertTrue(generate_aggregate_dataframe(columns, queue).equals(expected))
+
+    def test_generate_aggregate_dataframe_non_queue(self):
+        columns = ['Ticker', '02-08-2022', '02-08-2022']
+        queue = []
+
+        with self.assertRaises(TypeError) as assertion:
+            generate_aggregate_dataframe(columns, queue)
+        expected_msg = 'generate_aggregate_dataframe: given data is not a multiprocessing.Manager.Queue'
+        self.assertEqual(str(assertion.exception), expected_msg)
