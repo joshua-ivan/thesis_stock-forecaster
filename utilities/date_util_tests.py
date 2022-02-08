@@ -13,6 +13,16 @@ class RedditScraperTests(unittest.TestCase):
         actual = generate_aggregate_columns(end_date='2022-02-05', timeframe_days=30, interval=7)
         self.assertEqual(expected, actual)
 
+    def test_generate_aggregate_columns_interval_one(self):
+        expected = ['Ticker', '2022-02-03', '2022-02-04', '2022-02-05']
+        actual = generate_aggregate_columns(end_date='2022-02-05', timeframe_days=3, interval=1)
+        self.assertEqual(expected, actual)
+
+    def test_generate_aggregate_columns_timeframe_days_one(self):
+        expected = ['Ticker', '2022-02-05']
+        actual = generate_aggregate_columns(end_date='2022-02-05', timeframe_days=1, interval=7)
+        self.assertEqual(expected, actual)
+
     def test_generate_bin_boundaries(self):
         expected = [
             {'start': '2022-01-09', 'end': '2022-01-15'},
@@ -29,6 +39,20 @@ class RedditScraperTests(unittest.TestCase):
             {'start': '2022-01-23', 'end': '2022-01-29'},
             {'start': '2022-01-30', 'end': '2022-02-05'}]
         actual = generate_bin_boundaries(end_date='2022-02-05', timeframe_days=30, interval=7)
+        self.assertEqual(expected, actual)
+
+    def test_generate_bin_boundaries_interval_one(self):
+        expected = [
+            {'start': '2022-02-03', 'end': '2022-02-03'},
+            {'start': '2022-02-04', 'end': '2022-02-04'},
+            {'start': '2022-02-05', 'end': '2022-02-05'}]
+        actual = generate_bin_boundaries(end_date='2022-02-05', timeframe_days=3, interval=1)
+        self.assertEqual(expected, actual)
+
+    def test_generate_bin_boundaries_timeframe_days_one(self):
+        expected = [
+            {'start': '2022-02-05', 'end': '2022-02-05'}]
+        actual = generate_bin_boundaries(end_date='2022-02-05', timeframe_days=1, interval=7)
         self.assertEqual(expected, actual)
 
     def test_check_date_utility_inputs(self):

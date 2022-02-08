@@ -1,5 +1,5 @@
 from multiprocessing import Pool, Queue, cpu_count
-from utilities import file_io, date_util
+from utilities import file_io, date_util, input_validation
 import config
 import pandas
 import re
@@ -80,11 +80,13 @@ def query_to_ticker(string):
 
 
 def aggregate_sentiment_bins(ticker, dataframe, end_date, timeframe_days, interval):
+    input_validation.check_nonempty_string(ticker, f'aggregate_sentiment_bins: {ticker} is not a nonempty string')
     bins = date_util.generate_bin_boundaries(end_date, timeframe_days, interval)
     aggregates = [ticker]
     for _bin in bins:
         df_bin = dataframe[dataframe['Date'].between(_bin['start'], _bin['end'])]
-        aggregates.append(df_bin['Sentiment'].mean())
+        bin_mean = df_bin['Sentiment'].mean() if len(df_bin) > 0 else 0
+        aggregates.append(bin_mean)
     return aggregates
 
 

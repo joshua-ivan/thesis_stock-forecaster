@@ -1,7 +1,8 @@
-from sentiment.calculate import SentimentCalculator, construct_post_paths, query_to_ticker
+from sentiment.calculate import SentimentCalculator, construct_post_paths, query_to_ticker, aggregate_sentiment_bins
 from unittest.mock import patch
 import unittest
 import warnings
+import pandas
 
 
 class RedditScraperTests(unittest.TestCase):
@@ -59,3 +60,22 @@ class RedditScraperTests(unittest.TestCase):
             self.assertEqual(query_to_ticker(query), 'test')
             mock_warn.assert_called_with(f'Query {query} is malformed')
 
+    def test_aggregate_sentiment_bins(self):
+        expected = ['TEST', -0.001832721679871246, -0.0038621282498579536, -0.00020059278347886648]
+        mock_csv = pandas.read_csv('mock_data/sentiment/MOCK.csv')
+        actual = aggregate_sentiment_bins('TEST', mock_csv, '2022-01-16', timeframe_days=7, interval=2)
+        self.assertEqual(expected, actual)
+
+    def test_aggregate_sentiment_bins_empty_bin(self):
+        expected = ['TEST', 0]
+        mock_csv = pandas.read_csv('mock_data/sentiment/MOCK.csv')
+        actual = aggregate_sentiment_bins('TEST', mock_csv, '2022-01-17', timeframe_days=1, interval=1)
+        self.assertEqual(expected, actual)
+
+    @patch('utilities.date_util.generate_bin_boundaries')
+    def test_aggregate_sentiment_bins_no_bins(self, mock_boundaries):
+        mock_boundaries.return_value = []
+        expected = ['TEST']
+        mock_csv = pandas.read_csv('mock_data/sentiment/MOCK.csv')
+        actual = aggregate_sentiment_bins('TEST', mock_csv, '2022-01-17', timeframe_days=1, interval=1)
+        self.assertEqual(expected, actual)
