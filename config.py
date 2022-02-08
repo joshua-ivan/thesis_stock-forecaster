@@ -129,6 +129,8 @@ raw_data_interval_days = 365
 
 bin_size = 7
 
+counts_dir = 'counts'
+
 thresholds = {
     'positive': 0.5,
     'negative': -0.5

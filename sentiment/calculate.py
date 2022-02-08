@@ -1,4 +1,5 @@
-from multiprocessing import Pool, Queue, cpu_count
+from multiprocessing import Pool, Manager, cpu_count
+from functools import partial
 from utilities import file_io, date_util, input_validation
 import config
 import pandas
@@ -10,6 +11,7 @@ import os
 class SentimentCalculator:
     def __init__(self):
         self.dictionary = pandas.read_csv('LoughranMcDonald_MasterDictionary_2020__condensed.csv')
+        self.dataframe = pandas.DataFrame(columns=['Filename', 'Date', 'Length', 'Negative', 'Positive', 'Sentiment'])
 
     def count_words(self, post, title):
         if not isinstance(post, str):
@@ -36,37 +38,49 @@ class SentimentCalculator:
             'sentiment': (positive - negative) / post_length
         }
 
+    def append_dataframe(self, filename, date, counts):
+        self.dataframe.append({
+            'Filename': filename,
+            'Date': date,
+            'Length': counts['length'],
+            'Negative': counts['negative'],
+            'Positive': counts['positive'],
+            'Sentiment': counts['sentiment']
+        }, ignore_index=True)
 
-def process_posts(arguments):
-    directory = arguments['full_paths']
-    aggregate_data = arguments['aggregate_data']
+    def export_dataframe(self, filename):
+        if not os.path.exists(config.counts_dir):
+            os.makedirs(config.counts_dir)
+        self.dataframe.to_csv(f'{config.counts_dir}/{filename}.csv', index=False)
+
+    def aggregate_by_bin(self, ticker, end_date, data_size, bin_size):
+        input_validation.check_nonempty_string(ticker, f'aggregate_by_bin: {ticker} is not a nonempty string')
+        bins = date_util.generate_bin_boundaries(end_date, data_size, bin_size)
+        aggregates = [ticker]
+        for _bin in bins:
+            df_bin = self.dataframe[self.dataframe['Date'].between(_bin['start'], _bin['end'])]
+            bin_mean = df_bin['Sentiment'].mean() if len(df_bin) > 0 else 0
+            aggregates.append(bin_mean)
+        return aggregates
+
+
+def process_posts(aggregate_data, directory):
     sentiment_calculator = SentimentCalculator()
-    word_counts_dir = 'counts'
 
-    sentiment_data = pandas.DataFrame(columns=['Filename', 'Date', 'Length', 'Negative', 'Positive', 'Sentiment'])
     date_dirs = os.listdir(directory)
     for date_dir in date_dirs:
         files = os.listdir(f'{directory}/{date_dir}')
         for file in files:
             post = file_io.read_file(f'{directory}/{date_dir}/{file}')
             counts = sentiment_calculator.count_words(post, file)
-            sentiment_data = sentiment_data.append({
-                'Filename': file,
-                'Date': date_dir,
-                'Length': counts['length'],
-                'Negative': counts['negative'],
-                'Positive': counts['positive'],
-                'Sentiment': counts['sentiment']
-            }, ignore_index=True)
+            sentiment_calculator.append_dataframe(file, date_dir, counts)
 
     query = directory.split('/')[1]
-    if not os.path.exists(word_counts_dir):
-        os.makedirs(word_counts_dir)
-    sentiment_data.to_csv(f'{word_counts_dir}/{query}.csv', index=False)
+    sentiment_calculator.export_dataframe(query)
 
     aggregate_data.put(
-        aggregate_sentiment_bins(
-            query_to_ticker(query), sentiment_data, config.end_date, config.raw_data_interval_days, config.bin_size))
+        sentiment_calculator.aggregate_by_bin(
+            query_to_ticker(query), config.end_date, config.raw_data_interval_days, config.bin_size))
 
 
 def query_to_ticker(string):
@@ -79,17 +93,6 @@ def query_to_ticker(string):
         return tokens[1]
 
 
-def aggregate_sentiment_bins(ticker, dataframe, end_date, timeframe_days, interval):
-    input_validation.check_nonempty_string(ticker, f'aggregate_sentiment_bins: {ticker} is not a nonempty string')
-    bins = date_util.generate_bin_boundaries(end_date, timeframe_days, interval)
-    aggregates = [ticker]
-    for _bin in bins:
-        df_bin = dataframe[dataframe['Date'].between(_bin['start'], _bin['end'])]
-        bin_mean = df_bin['Sentiment'].mean() if len(df_bin) > 0 else 0
-        aggregates.append(bin_mean)
-    return aggregates
-
-
 def construct_post_paths(base_dir):
     paths = []
     queries = os.listdir(base_dir)
@@ -100,17 +103,14 @@ def construct_post_paths(base_dir):
 
 def execute():
     full_paths = construct_post_paths('clean_posts')
-    aggregate_data = Queue()
+    aggregate_data = Manager().Queue()
     thread_pool = Pool(processes=cpu_count())
-    thread_pool.map(process_posts, {
-        'full_paths': full_paths,
-        'aggregate_data': aggregate_data
-    })
+    thread_pool.map(partial(process_posts, aggregate_data), full_paths)
     thread_pool.terminate()
 
     aggregates = pandas.DataFrame(columns=date_util.generate_aggregate_columns(
         config.end_date, config.raw_data_interval_days, config.bin_size))
     while not aggregate_data.empty():
         row = aggregate_data.get()
-        aggregates.iloc[len(aggregates)] = row
+        aggregates.loc[len(aggregates)] = row
     aggregates.to_csv('sentiment.csv', index=False)

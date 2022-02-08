@@ -8,8 +8,8 @@ def main():
     # get_stock_history.execute()
     # forecaster.execute()
     # clean_posts.execute()
-    # calculate.execute()
-    trader.execute()
+    calculate.execute()
+    # trader.execute()
 
 
 if __name__ == '__main__':
