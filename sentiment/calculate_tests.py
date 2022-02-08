@@ -62,6 +62,14 @@ class RedditScraperTests(unittest.TestCase):
             self.assertEqual(query_to_ticker(query), 'test')
             mock_warn.assert_called_with(f'Query {query} is malformed')
 
+    def test_append_dataframe(self):
+        columns = ['Filename', 'Date', 'Length', 'Negative', 'Positive', 'Sentiment']
+        data = [['test', '02-08-2022', 8, 0, 0, 0]]
+        expected = pandas.DataFrame(data, columns=columns)
+        self.calculator.append_dataframe(
+            'test', '02-08-2022', {'length': 8, 'negative': 0, 'positive': 0, 'sentiment': 0})
+        self.assertTrue(expected.loc[0].equals(self.calculator.dataframe.loc[0]))
+
     def test_aggregate_sentiment_bins(self):
         self.calculator.dataframe = pandas.read_csv('mock_data/sentiment/MOCK.csv')
         expected = ['TEST', -0.001832721679871246, -0.0038621282498579536, -0.00020059278347886648]

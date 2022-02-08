@@ -39,7 +39,7 @@ class SentimentCalculator:
         }
 
     def append_dataframe(self, filename, date, counts):
-        self.dataframe.append({
+        self.dataframe = self.dataframe.append({
             'Filename': filename,
             'Date': date,
             'Length': counts['length'],
