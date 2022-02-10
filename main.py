@@ -6,9 +6,9 @@ from trader import trader
 def main():
     # build_database.execute()
     # get_stock_history.execute()
-    # forecaster.execute()
+    forecaster.execute()
     # clean_posts.execute()
-    calculate.execute()
+    # calculate.execute()
     # trader.execute()
 
 

@@ -1,5 +1,7 @@
-from config import stocks
 from utilities.input_validation import check_float
+from datetime import datetime
+import utilities.date_util as date_util
+import config
 import pmdarima
 import arch
 import pandas
@@ -22,13 +24,17 @@ def forecast(history):
     return predicted_mean + predicted_variance
 
 
-def extract_stock_prices(directory, ticker):
+def read_stock_prices(directory, ticker):
     file = f'{directory}/{ticker}.csv'
     if not os.path.exists(file):
         raise FileNotFoundError(f'No price history found for {ticker}')
 
-    price_history = pandas.read_csv(f'{directory}/{ticker}.csv', usecols=['Date', 'Adj Close'])
-    return price_history['Adj Close'].to_numpy()
+    return pandas.read_csv(f'{directory}/{ticker}.csv', usecols=['Date', 'Adj Close'], index_col='Date')
+
+
+def fill_missing_dates(dataframe):
+    dataframe.index = pandas.to_datetime(dataframe.index, format='%Y-%m-%d')
+    return dataframe.resample('1D').ffill()
 
 
 def calculate_percent_error(expected, actual):
@@ -40,11 +46,11 @@ def calculate_percent_error(expected, actual):
 
 def evaluate_forecaster():
     output_frame = pandas.DataFrame(columns=['Ticker', 'Expected', 'Actual', 'Error'])
-    for stock in stocks:
+    for stock in config.stocks:
         ticker = stock['ticker']
 
-        price_history = extract_stock_prices(PRICES_DIR, ticker)
-        expected = forecast(price_history[0:-1])
+        price_history = read_stock_prices(PRICES_DIR, ticker)
+        expected = forecast(price_history['Adj Close'].to_numpy())
         actual = price_history[-1]
         error = calculate_percent_error(expected, actual)
         output_frame = output_frame.append({
@@ -59,17 +65,26 @@ def evaluate_forecaster():
     output_frame.to_csv('forecaster_evaluation.csv')
 
 
-def execute():
-    output_frame = pandas.DataFrame(columns=['Ticker', 'Projection', 'Profit/Loss'])
-    for stock in stocks:
-        ticker = stock['ticker']
+def price_history_bin_to_series(history, _bin):
+    start = datetime.fromisoformat(_bin['start'])
+    end = datetime.fromisoformat(_bin['end'])
+    return history[(history.index >= start) & (history.index <= end)]['Adj Close'].to_numpy()
 
-        price_history = extract_stock_prices(PRICES_DIR, ticker)
-        projection = forecast(price_history)
-        output_frame = output_frame.append({
-            'Ticker': ticker,
-            'Projection': projection,
-            'Profit/Loss': projection / price_history[-1]},
-            ignore_index=True)
+
+def execute():
+    columns = date_util.generate_aggregate_columns(config.end_date, config.raw_data_interval_days, config.bin_size)
+    bins = date_util.generate_bin_boundaries(config.end_date, config.raw_data_interval_days, config.bin_size)
+    output_frame = pandas.DataFrame(columns=columns)
+
+    for stock in config.stocks:
+        ticker = stock['ticker']
+        price_history = fill_missing_dates(read_stock_prices(PRICES_DIR, ticker))
+
+        projections = [ticker]
+        for _bin in bins:
+            bin_history = price_history_bin_to_series(price_history, _bin)
+            projections.append((forecast(bin_history) / bin_history[-1]) - 1)
+
+        output_frame.loc[len(output_frame)] = projections
 
     output_frame.to_csv('projection.csv', index=False)
