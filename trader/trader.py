@@ -1,7 +1,8 @@
 from utilities.input_validation import check_float, check_bounds
 from utilities.pandas_util import extract_cell
-from config import stocks, thresholds
+import utilities.date_util as date_util
 import pandas
+import config
 
 
 def zero_one_normalization(minimum, maximum):
@@ -42,27 +43,31 @@ def trade_decision(sentiment, projection):
     check_bounds(
         projection, minimum, maximum, f'trade_decision: \'{projection}\' is out of bounds [{minimum}, {maximum}]')
 
-    if sentiment >= thresholds['positive'] and projection <= thresholds['negative']:
+    if sentiment >= config.thresholds['positive'] and projection <= config.thresholds['negative']:
         return 'SELL'
-    elif sentiment <= thresholds['negative'] and projection >= thresholds['positive']:
+    elif sentiment <= config.thresholds['negative'] and projection >= config.thresholds['positive']:
         return 'BUY'
     return 'HOLD'
 
 
 def execute():
-    sentiments = polarity_preserving_normalization('sentiment.csv', 'Sentiment')
-    projections = polarity_preserving_normalization('projection.csv', 'Profit/Loss')
+    decisions_dataframe = pandas.DataFrame(columns=['Ticker'])
+    for stock in config.stocks:
+        decisions_dataframe.loc[len(decisions_dataframe)] = stock['ticker']
 
-    decisions = pandas.DataFrame(columns=['Ticker', 'Decision'])
-    for stock in stocks:
-        stock_sentiment = extract_cell(sentiments, 'Ticker', stock['ticker'], 'Sentiment')
-        stock_sentiment = 0.0 if stock_sentiment is None else stock_sentiment
-        stock_projection = extract_cell(projections, 'Ticker', stock['ticker'], 'Profit/Loss')
-        stock_projection = 0.0 if stock_projection is None else stock_projection
+    dates = date_util.generate_aggregate_columns(config.end_date, config.raw_data_interval_days, config.bin_size)[1:]
+    for date in dates:
+        sentiments = polarity_preserving_normalization('sentiment.csv', date)
+        projections = polarity_preserving_normalization('projection.csv', date)
 
-        decisions = decisions.append({
-            'Ticker': stock['ticker'],
-            'Decision': trade_decision(stock_sentiment, stock_projection)
-        }, ignore_index=True)
+        decisions_column = []
+        for stock in config.stocks:
+            stock_sentiment = extract_cell(sentiments, 'Ticker', stock['ticker'], date)
+            stock_sentiment = 0.0 if stock_sentiment is None else stock_sentiment
+            stock_projection = extract_cell(projections, 'Ticker', stock['ticker'], date)
+            stock_projection = 0.0 if stock_projection is None else stock_projection
+            decisions_column.append(trade_decision(stock_sentiment, stock_projection))
 
-    decisions.to_csv('decision.csv', index=False)
+        decisions_dataframe.insert(len(decisions_dataframe.columns), column=date, value=decisions_column)
+
+    decisions_dataframe.to_csv('decision.csv', index=False)
