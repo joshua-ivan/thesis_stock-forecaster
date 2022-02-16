@@ -38,8 +38,8 @@ def fill_missing_dates(dataframe):
 
 
 def calculate_percent_error(expected, actual):
-    check_float(expected, f'calculate_percent_error: \'{expected}\' is not a real number')
-    check_float(actual, f'calculate_percent_error: \'{actual}\' is not a real number')
+    check_float(expected, 'calculate_percent_error')
+    check_float(actual, 'calculate_percent_error')
 
     return ((actual - expected) / actual) * 100
 

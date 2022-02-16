@@ -11,8 +11,8 @@ def zero_one_normalization(minimum, maximum):
 
         return (n - minimum) / (maximum - minimum)
 
-    check_float(minimum, f'zero_one_normalization: \'{minimum}\' is not a real number')
-    check_float(maximum, f'zero_one_normalization: \'{maximum}\' is not a real number')
+    check_float(minimum, 'zero_one_normalization')
+    check_float(maximum, 'zero_one_normalization')
 
     return normalize
 

@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 
 def generate_aggregate_columns(end_date, timeframe_days, interval):
-    check_date_utility_inputs('generate_aggregate_columns', end_date, timeframe_days, interval)
+    check_date_bin_utility_inputs('generate_aggregate_columns', end_date, timeframe_days, interval)
 
     current_date = date.fromisoformat(end_date)
     columns = deque([end_date])
@@ -20,7 +20,7 @@ def generate_aggregate_columns(end_date, timeframe_days, interval):
 
 
 def generate_bin_boundaries(end_date, timeframe_days, interval):
-    check_date_utility_inputs('generate_bin_boundaries', end_date, timeframe_days, interval)
+    check_date_bin_utility_inputs('generate_bin_boundaries', end_date, timeframe_days, interval)
 
     bin_boundaries = deque()
     bin_end = date.fromisoformat(end_date)
@@ -42,9 +42,15 @@ def generate_bin_boundaries(end_date, timeframe_days, interval):
     return list(bin_boundaries)
 
 
-def check_date_utility_inputs(function_name, end_date, timeframe_days, interval):
-    check_isoformat_date_string(
-        end_date, f'{function_name}: \'{end_date}\' (end_date) is not an ISO format date string')
+def check_date_bin_utility_inputs(function_name, end_date, timeframe_days, interval):
+    check_isoformat_date_string(end_date, function_name)
     check_positive_int(
         timeframe_days, f'{function_name}: \'{timeframe_days}\' (timeframe_days) is not a positive integer')
     check_positive_int(interval, f'{function_name}: \'{interval}\' (interval) is not a positive integer')
+
+
+def get_stock_action_date(history, raw_date):
+    action_date = date.fromisoformat(raw_date)
+    while len(history[history['Date'] == action_date.isoformat()]) <= 0:
+        action_date = action_date - timedelta(days=1)
+    return action_date.isoformat()

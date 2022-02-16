@@ -1,11 +1,12 @@
 from datetime import date
 
 
-def check_float(n, msg):
+def check_float(n, function_name):
+    error_msg = f'{function_name}: \'{n}\' is not a floating-point number'
     try:
         float(n)
-    except ValueError:
-        raise TypeError(msg)
+    except ValueError as error:
+        raise TypeError(error_msg) from error
 
 
 def check_bounds(n, lower, upper, msg):
@@ -18,16 +19,19 @@ def check_positive_int(n, msg):
         raise TypeError(msg)
 
 
-def check_nonempty_string(s, msg):
+def check_nonempty_string(s, function_name):
+    error_msg = f'{function_name}: \'{s}\' is not a nonempty string'
+
     if type(s) != str or len(s) <= 0:
-        raise TypeError(msg)
+        raise TypeError(error_msg)
 
 
-def check_isoformat_date_string(s, msg):
+def check_isoformat_date_string(s, function_name):
+    error_msg = f'{function_name}: \'{s}\' is not an ISO format date string'
     if type(s) != str:
-        raise TypeError(msg)
+        raise TypeError(error_msg)
 
     try:
         date.fromisoformat(s)
     except ValueError:
-        raise TypeError(msg)
+        raise TypeError(error_msg)

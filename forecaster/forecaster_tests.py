@@ -41,13 +41,13 @@ class ForecasterTests(unittest.TestCase):
             forecaster.calculate_percent_error(expected, 2)
             self.fail()
         except TypeError as error:
-            self.assertEqual(str(error), f'calculate_percent_error: \'{expected}\' is not a real number')
+            self.assertEqual(str(error), f'calculate_percent_error: \'{expected}\' is not a floating-point number')
 
         try:
             forecaster.calculate_percent_error(2, actual)
             self.fail()
         except TypeError as error:
-            self.assertEqual(str(error), f'calculate_percent_error: \'{actual}\' is not a real number')
+            self.assertEqual(str(error), f'calculate_percent_error: \'{actual}\' is not a floating-point number')
 
     def test_price_history_bin_to_series(self):
         expected = [313.880005, 313.649994]

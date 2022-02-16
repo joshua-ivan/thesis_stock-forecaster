@@ -1,6 +1,6 @@
 from sentiment import build_database, clean_posts, calculate
 from forecaster import get_stock_history, forecaster
-from trader import trader
+from trader import trader, simulation
 
 
 def main():
@@ -9,7 +9,8 @@ def main():
     # forecaster.execute()
     # clean_posts.execute()
     # calculate.execute()
-    trader.execute()
+    # trader.execute()
+    simulation.execute()
 
 
 if __name__ == '__main__':

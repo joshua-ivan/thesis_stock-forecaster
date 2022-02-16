@@ -21,13 +21,13 @@ class TraderTests(unittest.TestCase):
             zero_one_normalization(minimum, -1)(2)
             self.fail()
         except TypeError as error:
-            self.assertEqual(str(error), f'zero_one_normalization: \'{minimum}\' is not a real number')
+            self.assertEqual(str(error), f'zero_one_normalization: \'{minimum}\' is not a floating-point number')
 
         try:
             zero_one_normalization(-1, maximum)(2)
             self.fail()
         except TypeError as error:
-            self.assertEqual(str(error), f'zero_one_normalization: \'{maximum}\' is not a real number')
+            self.assertEqual(str(error), f'zero_one_normalization: \'{maximum}\' is not a floating-point number')
 
     def test_zero_one_normalization_out_of_bounds(self):
         minimum, maximum = 0, 10
