@@ -31,6 +31,6 @@ def execute():
         end_date = time.time()
         start_date = end_date - timedelta(days=730).total_seconds()
 
-        reddit_scraper.search_all(reddit_query.build(terms), start_date, end_date, subreddit_counter.increment, '')
+        reddit_scraper.scrape('all', reddit_query.build(terms), start_date, end_date, subreddit_counter.increment, '')
 
     subreddit_counter.export()

@@ -87,6 +87,6 @@ def execute():
     print(f'Average weekly portfolio returns: {mean}')
     stdev = numpy.std(returns[1:])
     print(f'Stdev weekly portfolio returns: {stdev}')
-    weekly_savings_rate = annual_to_weekly_compound_interest_rate(2.00)
+    weekly_savings_rate = 100 * annual_to_weekly_compound_interest_rate(0.02)
     _sharpe_ratio = sharpe_ratio(mean, weekly_savings_rate, stdev)
     print(f'Sharpe ratio vs. 2% interest savings: {_sharpe_ratio}')

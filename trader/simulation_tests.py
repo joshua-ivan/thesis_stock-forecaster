@@ -51,7 +51,7 @@ class SimulationTests(unittest.TestCase):
         self.assertEqual(round(simulation.percent_returns(95, 100), 2), -5.00)
 
     def test_annual_to_weekly_compound_interest_rate(self):
-        self.assertEqual(round(simulation.annual_to_weekly_compound_interest_rate(5.00), 3), 0.035)
+        self.assertEqual(round(simulation.annual_to_weekly_compound_interest_rate(0.05), 5), 0.00094)
 
     def test_sharpe_ratio(self):
         self.assertEqual(round(simulation.sharpe_ratio(0.12, 0.05, 0.1), 3), 0.7)
