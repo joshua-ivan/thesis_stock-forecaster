@@ -3,6 +3,9 @@
 venv/
 __pycache__
 
+# PRAW configs
+praw.ini
+
 # Raw input data
 posts/
 prices/
