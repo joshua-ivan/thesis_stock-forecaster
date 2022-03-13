@@ -13,6 +13,7 @@ prices/
 # Intermediate date
 clean_posts/
 counts/
+forecaster_evaluation/
 
 # Output
 *.csv

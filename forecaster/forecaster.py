@@ -11,10 +11,10 @@ import os
 PRICES_DIR = 'prices'
 
 
-def forecast(history):
+def forecast(history, garch_p=1, garch_q=1):
     arima_model = pmdarima.auto_arima(history)
     arima_residuals = arima_model.arima_res_.resid
-    garch = arch.arch_model(arima_residuals, p=1, q=1)
+    garch = arch.arch_model(arima_residuals, p=garch_p, q=garch_q)
     garch_model = garch.fit()
 
     predicted_mean = arima_model.predict(n_periods=1)[0]
@@ -45,24 +45,38 @@ def calculate_percent_error(expected, actual):
 
 
 def evaluate_forecaster():
-    output_frame = pandas.DataFrame(columns=['Ticker', 'Expected', 'Actual', 'Error'])
-    for stock in config.stocks:
-        ticker = stock['ticker']
+    columns = date_util.generate_aggregate_columns(config.end_date, config.raw_data_interval_days, config.bin_size)
+    bins = date_util.generate_bin_boundaries(config.end_date, config.raw_data_interval_days, config.bin_size)
+    mean_squared_percent_errors = []
 
-        price_history = read_stock_prices(PRICES_DIR, ticker)
-        expected = forecast(price_history['Adj Close'].to_numpy())
-        actual = price_history[-1]
-        error = calculate_percent_error(expected, actual)
-        output_frame = output_frame.append({
-            'Ticker': ticker,
-            'Expected': expected,
-            'Actual': actual,
-            'Error': error},
-            ignore_index=True)
+    for garch_i in range(1, 6, 1):
+        mean_squared_percent_errors.append([])
 
-    errors = output_frame['Error'].to_numpy()
-    print(f'Mean Squared Percent Error: {numpy.square(errors).mean()}\n')
-    output_frame.to_csv('forecaster_evaluation.csv')
+        for garch_j in range(1, 6, 1):
+            output_frame = pandas.DataFrame(columns=columns)
+
+            for stock in config.stocks:
+                ticker = stock['ticker']
+                price_history = fill_missing_dates(read_stock_prices(PRICES_DIR, ticker))
+
+                stock_errors = [ticker]
+                for _bin in bins:
+                    bin_history = price_history_bin_to_series(price_history, _bin)
+                    expected = forecast(bin_history[0:-1], garch_i, garch_j)
+                    actual = bin_history[-1]
+                    stock_errors.append(calculate_percent_error(expected, actual))
+
+                output_frame.loc[len(output_frame)] = stock_errors
+
+            all_errors = output_frame.loc[:, output_frame.columns != 'Ticker']
+            mean_squared_percent_error = numpy.square(all_errors.values).mean()
+            mean_squared_percent_errors[garch_i - 1].append(mean_squared_percent_error)
+            output_frame.to_csv(f'forecaster_evaluation_i{garch_i}j{garch_j}.csv', index=False)
+
+    for garch_i in range(1, 6, 1):
+        for garch_j in range(1, 6, 1):
+            error = mean_squared_percent_errors[garch_i - 1][garch_j - 1]
+            print(f'GARCH({garch_i},{garch_j}) Mean Squared Percent Error: {error}\n')
 
 
 def price_history_bin_to_series(history, _bin):
@@ -71,7 +85,7 @@ def price_history_bin_to_series(history, _bin):
     return history[(history.index >= start) & (history.index <= end)]['Adj Close'].to_numpy()
 
 
-def execute():
+def generate_forecasts():
     columns = date_util.generate_aggregate_columns(config.end_date, config.raw_data_interval_days, config.bin_size)
     bins = date_util.generate_bin_boundaries(config.end_date, config.raw_data_interval_days, config.bin_size)
     output_frame = pandas.DataFrame(columns=columns)
@@ -83,8 +97,12 @@ def execute():
         projections = [ticker]
         for _bin in bins:
             bin_history = price_history_bin_to_series(price_history, _bin)
-            projections.append((forecast(bin_history) / bin_history[-1]) - 1)
+            projections.append((forecast(bin_history, garch_p=4, garch_q=1) / bin_history[-1]) - 1)
 
         output_frame.loc[len(output_frame)] = projections
 
     output_frame.to_csv('projection.csv', index=False)
+
+
+def execute():
+    generate_forecasts()
