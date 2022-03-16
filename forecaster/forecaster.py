@@ -71,7 +71,7 @@ def evaluate_forecaster():
             all_errors = output_frame.loc[:, output_frame.columns != 'Ticker']
             mean_squared_percent_error = numpy.square(all_errors.values).mean()
             mean_squared_percent_errors[garch_i - 1].append(mean_squared_percent_error)
-            output_frame.to_csv(f'forecaster_evaluation_i{garch_i}j{garch_j}.csv', index=False)
+            output_frame.to_csv(f'garch_coeffs/i{garch_i}j{garch_j}.csv', index=False)
 
     for garch_i in range(1, 6, 1):
         for garch_j in range(1, 6, 1):

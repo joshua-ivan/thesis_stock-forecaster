@@ -127,7 +127,7 @@ end_date = '2022-01-30'
 
 raw_data_interval_days = 365
 
-bin_size = 7
+bin_size = 90
 
 counts_dir = 'counts'
 

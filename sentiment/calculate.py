@@ -39,14 +39,15 @@ class SentimentCalculator:
         }
 
     def append_dataframe(self, filename, date, counts):
-        self.dataframe = self.dataframe.append({
+        row = pandas.DataFrame({
             'Filename': filename,
             'Date': date,
             'Length': counts['length'],
             'Negative': counts['negative'],
             'Positive': counts['positive'],
             'Sentiment': counts['sentiment']
-        }, ignore_index=True)
+        }, index=[-1])
+        self.dataframe = pandas.concat([self.dataframe, row], ignore_index=True)
 
     def export_dataframe(self, filename):
         if not os.path.exists(config.counts_dir):

@@ -72,14 +72,14 @@ class RedditScraperTests(unittest.TestCase):
 
     def test_aggregate_sentiment_bins(self):
         self.calculator.dataframe = pandas.read_csv('mock_data/sentiment/MOCK.csv')
-        expected = ['TEST', -0.001832721679871246, -0.0038621282498579536, -0.00020059278347886648]
-        actual = self.calculator.aggregate_by_bin('TEST', '2022-01-16', data_size=7, bin_size=2)
+        expected = ['TEST', 0.0043189439447462626, 0.00015967394926260045, 0.0026306249983937004]
+        actual = self.calculator.aggregate_by_bin('TEST', '2021-02-08', data_size=7, bin_size=2)
         self.assertEqual(expected, actual)
 
     def test_aggregate_sentiment_bins_empty_bin(self):
         self.calculator.dataframe = pandas.read_csv('mock_data/sentiment/MOCK.csv')
         expected = ['TEST', 0]
-        actual = self.calculator.aggregate_by_bin('TEST', '2022-01-17', data_size=1, bin_size=1)
+        actual = self.calculator.aggregate_by_bin('TEST', '2021-02-09', data_size=1, bin_size=1)
         self.assertEqual(expected, actual)
 
     @patch('utilities.date_util.generate_bin_boundaries')
@@ -87,7 +87,7 @@ class RedditScraperTests(unittest.TestCase):
         self.calculator.dataframe = pandas.read_csv('mock_data/sentiment/MOCK.csv')
         mock_boundaries.return_value = []
         expected = ['TEST']
-        actual = self.calculator.aggregate_by_bin('TEST', '2022-01-17', data_size=1, bin_size=1)
+        actual = self.calculator.aggregate_by_bin('TEST', '2021-02-09', data_size=1, bin_size=1)
         self.assertEqual(expected, actual)
 
     def test_generate_aggregate_dataframe(self):

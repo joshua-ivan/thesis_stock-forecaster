@@ -51,6 +51,12 @@ def percent_returns(new_value, old_value):
     return ((new_value / old_value) - 1) * 100
 
 
+def annual_to_arbitrary_compound_interest_rate(annual_rate, num_payments):
+    input_validation.check_float(annual_rate, 'annual_to_arbitrary_compound_interest_rate')
+    input_validation.check_positive_int(num_payments, 'annual_to_arbitrary_compound_interest_rate')
+    return math.pow(1 + annual_rate, (1 / num_payments)) - 1
+
+
 def annual_to_weekly_compound_interest_rate(annual_rate):
     input_validation.check_float(annual_rate, 'annual_to_weekly_compound_interest_rate')
     return math.pow(1 + annual_rate, (1 / 52)) - 1
