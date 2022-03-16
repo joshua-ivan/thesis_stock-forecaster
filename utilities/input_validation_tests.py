@@ -25,3 +25,10 @@ class InputValidationTests(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             input_validation.check_float('fish', 'test_check_float')
+
+    def test_check_positive_int(self):
+        with self.assertRaises(TypeError):
+            input_validation.check_positive_int(None, 'test_check_positive_int')
+
+        with self.assertRaises(TypeError):
+            input_validation.check_positive_int(-1, 'test_check_positive_int')

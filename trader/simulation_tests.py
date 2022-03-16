@@ -53,5 +53,10 @@ class SimulationTests(unittest.TestCase):
     def test_annual_to_weekly_compound_interest_rate(self):
         self.assertEqual(round(simulation.annual_to_weekly_compound_interest_rate(0.05), 5), 0.00094)
 
+    def test_annual_to_arbitary_compound_interest_rate(self):
+        self.assertEqual(round(simulation.annual_to_arbitrary_compound_interest_rate(0.05, 52), 5), 0.00094)
+        self.assertEqual(round(simulation.annual_to_arbitrary_compound_interest_rate(0.05, 12), 5), 0.00407)
+        self.assertEqual(round(simulation.annual_to_arbitrary_compound_interest_rate(0.05, 4), 5), 0.01227)
+
     def test_sharpe_ratio(self):
         self.assertEqual(round(simulation.sharpe_ratio(0.12, 0.05, 0.1), 3), 0.7)

@@ -58,8 +58,7 @@ def annual_to_arbitrary_compound_interest_rate(annual_rate, num_payments):
 
 
 def annual_to_weekly_compound_interest_rate(annual_rate):
-    input_validation.check_float(annual_rate, 'annual_to_weekly_compound_interest_rate')
-    return math.pow(1 + annual_rate, (1 / 52)) - 1
+    return annual_to_arbitrary_compound_interest_rate(annual_rate, 52)
 
 
 def sharpe_ratio(mean_returns, riskless_returns, stdev_returns):
@@ -89,10 +88,14 @@ def execute():
         returns.append(percent_return)
         print(f'{date}: Value - {value} Returns - {percent_return}')
 
+    num_intervals = len(decisions.columns[1:])
     mean = numpy.mean(returns[1:])
-    print(f'Average weekly portfolio returns: {mean}')
+    print(f'Average portfolio returns over {num_intervals} intervals: {mean}')
     stdev = numpy.std(returns[1:])
-    print(f'Stdev weekly portfolio returns: {stdev}')
-    weekly_savings_rate = 100 * annual_to_weekly_compound_interest_rate(0.02)
-    _sharpe_ratio = sharpe_ratio(mean, weekly_savings_rate, stdev)
-    print(f'Sharpe ratio vs. 2% interest savings: {_sharpe_ratio}')
+    print(f'Stdev portfolio returns over {num_intervals} intervals: {stdev}')
+    savings_rate = 100 * annual_to_arbitrary_compound_interest_rate(0.02, num_intervals)
+    sharpe_ratio_vs_savings = sharpe_ratio(mean, savings_rate, stdev)
+    print(f'Sharpe ratio vs. 2% interest savings: {sharpe_ratio_vs_savings}')
+    djia_rate = 100 * annual_to_arbitrary_compound_interest_rate(config.djia_performance, num_intervals)
+    sharpe_ratio_vs_djia = sharpe_ratio(mean, djia_rate, stdev)
+    print(f'Sharpe ratio vs. DJIA: {sharpe_ratio_vs_djia}')
