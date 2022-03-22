@@ -130,9 +130,14 @@ djia_performance = 0.1582
 
 counts_dir = 'counts'
 
+garch_coeffs = {
+    'p': 4,
+    'q': 1
+}
+
 thresholds = {
-    'positive': 0.5,
-    'negative': -0.5
+    'positive': 0.25,
+    'negative': -0.25
 }
 
 debug_responses = False

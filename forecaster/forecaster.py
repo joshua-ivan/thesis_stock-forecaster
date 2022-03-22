@@ -89,6 +89,8 @@ def generate_forecasts():
     columns = date_util.generate_aggregate_columns(config.end_date, config.raw_data_interval_days, config.bin_size)
     bins = date_util.generate_bin_boundaries(config.end_date, config.raw_data_interval_days, config.bin_size)
     output_frame = pandas.DataFrame(columns=columns)
+    garch_p = config.garch_coeffs['p']
+    garch_q = config.garch_coeffs['q']
 
     for stock in config.stocks:
         ticker = stock['ticker']
@@ -97,7 +99,7 @@ def generate_forecasts():
         projections = [ticker]
         for _bin in bins:
             bin_history = price_history_bin_to_series(price_history, _bin)
-            projections.append((forecast(bin_history, garch_p=4, garch_q=1) / bin_history[-1]) - 1)
+            projections.append((forecast(bin_history, garch_p=garch_p, garch_q=garch_q) / bin_history[-1]) - 1)
 
         output_frame.loc[len(output_frame)] = projections
 
