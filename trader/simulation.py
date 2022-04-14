@@ -74,6 +74,10 @@ def execute():
     values = [50000]
     returns = [0.0]
 
+    if config.buy_at_start:
+        for stock in config.stocks:
+            portfolio.buy(stock['ticker'], config.start_date)
+
     for date in decisions.columns[1:]:
         for stock in config.stocks:
             decision = extract_cell(decisions, 'Ticker', stock['ticker'], date)

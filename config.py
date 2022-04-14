@@ -123,6 +123,8 @@ stocks = [
 
 subreddits = ['stocks', 'StockMarket', 'MillennialBets', 'Optionmillionaires', 'wallstreetbets']
 
+buy_at_start = True
+start_date = '2022-02-01'
 end_date = '2022-01-30'
 raw_data_interval_days = 365
 bin_size = 90
