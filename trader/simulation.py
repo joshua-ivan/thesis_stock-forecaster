@@ -74,7 +74,7 @@ def execute():
     values = [50000]
     returns = [0.0]
 
-    if config.buy_at_start:
+    if config.initial_holdings:
         for stock in config.stocks:
             portfolio.buy(stock['ticker'], config.start_date)
 
