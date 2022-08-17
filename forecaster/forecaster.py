@@ -1,5 +1,11 @@
 from utilities.input_validation import check_float
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+from keras.layers import Dropout
 from datetime import datetime
+from matplotlib import pyplot
 import utilities.date_util as date_util
 import config
 import pmdarima
@@ -104,6 +110,57 @@ def generate_forecasts():
         output_frame.loc[len(output_frame)] = projections
 
     output_frame.to_csv('projection.csv', index=False)
+
+
+def lstm_tutorial():
+    raw_train_data = pandas.read_csv('intermediate_data/prices/GME.csv')
+    clean_train_data = raw_train_data.iloc[:, 1:2].values
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    clean_train_data = scaler.fit_transform(clean_train_data)
+    features_set = []
+    labels = []
+    for i in range(60, len(clean_train_data)):
+        features_set.append(clean_train_data[i-60:i, 0])
+        labels.append(clean_train_data[i, 0])
+    features_set = numpy.array(features_set)
+    features_set = numpy.reshape(features_set, (features_set.shape[0], features_set.shape[1], 1))
+    labels = numpy.array(labels)
+
+    model = Sequential()
+    model.add(LSTM(units=50, return_sequences=True, input_shape=(features_set.shape[1], 1)))
+    model.add(Dropout(0.2))
+    model.add(LSTM(units=50, return_sequences=True))
+    model.add(Dropout(0.2))
+    model.add(LSTM(units=50, return_sequences=True))
+    model.add(Dropout(0.2))
+    model.add(LSTM(units=50))
+    model.add(Dropout(0.2))
+    model.add(Dense(units=1))
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    model.fit(features_set, labels, epochs=100, batch_size=32)
+
+    raw_test_data = pandas.read_csv('intermediate_data/prices/GME.csv')
+    clean_test_data = raw_test_data.iloc[:, 1:2].values
+    total = pandas.concat((raw_train_data['Open'], raw_test_data['Open']), axis=0)
+    test_inputs = total[len(total) - len(raw_test_data) - 60:].values
+    test_inputs = test_inputs.reshape(-1,1)
+    test_inputs = scaler.transform(test_inputs)
+    test_features = []
+    for i in range(60, len(clean_test_data)):
+        test_features.append(test_inputs[i-60:i, 0])
+    test_features = numpy.array(test_features)
+    test_features = numpy.reshape(test_features, (test_features.shape[0], test_features.shape[1], 1))
+
+    predictions = model.predict(test_features)
+    predictions = scaler.inverse_transform(predictions)
+    pyplot.figure(figsize=(10, 6))
+    pyplot.plot(clean_test_data, color='blue', label='Actual GME')
+    pyplot.plot(predictions, color='red', label='Predicted GME')
+    pyplot.title('GME Prediction')
+    pyplot.xlabel('Date')
+    pyplot.ylabel('Stock Price')
+    pyplot.legend()
+    pyplot.savefig('GME.png')
 
 
 def execute():

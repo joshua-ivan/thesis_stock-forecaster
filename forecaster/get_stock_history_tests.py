@@ -2,6 +2,7 @@ from forecaster import get_stock_history
 from unittest.mock import Mock
 import unittest
 import time
+import os
 
 
 class GetStockHistoryTests(unittest.TestCase):
@@ -27,3 +28,6 @@ class GetStockHistoryTests(unittest.TestCase):
 
         mock_api.Ticker.assert_called_with('MOCK')
         mock_ticker.history.assert_called_with(period='2d', interval='1m')
+
+        # os.makedirs('intermediate_data/prices')
+        # get_stock_history.get_stocks(ticker='GME', period='2d').to_csv('intermediate_data/prices/GME.csv')
