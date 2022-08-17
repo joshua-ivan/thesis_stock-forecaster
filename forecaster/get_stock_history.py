@@ -1,6 +1,7 @@
 import config
 from config import stocks, raw_data_interval_days
 from utilities import file_io
+import yfinance
 import requests
 import time
 
@@ -14,6 +15,10 @@ def build_query_params(end_timestamp, interval_days):
         'events': 'history',
         'includeAdjustedClose': 'true'
     }
+
+
+def get_stocks(ticker, period, api=yfinance):
+    return api.Ticker(ticker).history(period=period, interval='1m')
 
 
 def execute():

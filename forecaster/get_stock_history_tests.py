@@ -1,4 +1,5 @@
 from forecaster import get_stock_history
+from unittest.mock import Mock
 import unittest
 import time
 
@@ -16,3 +17,13 @@ class GetStockHistoryTests(unittest.TestCase):
         }
         actual_query_params = get_stock_history.build_query_params(end_timestamp, interval_days)
         self.assertEqual(expected_query_params, actual_query_params)
+
+    def test_get_stocks(self):
+        mock_api = Mock()
+        mock_ticker = Mock()
+        mock_api.Ticker.return_value = mock_ticker
+
+        get_stock_history.get_stocks(ticker='MOCK', period='2d', api=mock_api)
+
+        mock_api.Ticker.assert_called_with('MOCK')
+        mock_ticker.history.assert_called_with(period='2d', interval='1m')
