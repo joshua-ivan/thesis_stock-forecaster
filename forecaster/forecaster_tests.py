@@ -56,7 +56,3 @@ class ForecasterTests(unittest.TestCase):
         _bin = {'start': '2022-01-06', 'end': '2022-01-07'}
         actual = forecaster.price_history_bin_to_series(prices, _bin)
         self.assertTrue((expected == actual).all())
-
-    def test_lstm_tutorial(self):
-        # forecaster.lstm_tutorial()
-        pass
