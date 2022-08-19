@@ -15,6 +15,7 @@ clean_posts/
 counts/
 forecaster_evaluation/
 garch_coeffs/
+intermediate_data/
 
 # Output
 *.csv

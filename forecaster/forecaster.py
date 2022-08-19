@@ -1,6 +1,6 @@
 from utilities.input_validation import check_float
 from sklearn.preprocessing import MinMaxScaler
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers import Dropout
@@ -126,18 +126,23 @@ def lstm_tutorial():
     features_set = numpy.reshape(features_set, (features_set.shape[0], features_set.shape[1], 1))
     labels = numpy.array(labels)
 
-    model = Sequential()
-    model.add(LSTM(units=50, return_sequences=True, input_shape=(features_set.shape[1], 1)))
-    model.add(Dropout(0.2))
-    model.add(LSTM(units=50, return_sequences=True))
-    model.add(Dropout(0.2))
-    model.add(LSTM(units=50, return_sequences=True))
-    model.add(Dropout(0.2))
-    model.add(LSTM(units=50))
-    model.add(Dropout(0.2))
-    model.add(Dense(units=1))
-    model.compile(optimizer='adam', loss='mean_squared_error')
+    if os.path.isdir('intermediate_data/models/GME'):
+        model = load_model('intermediate_data/models/GME')
+    else:
+        model = Sequential()
+        model.add(LSTM(units=50, return_sequences=True, input_shape=(features_set.shape[1], 1)))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50, return_sequences=True))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50, return_sequences=True))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50))
+        model.add(Dropout(0.2))
+        model.add(Dense(units=1))
+        model.compile(optimizer='adam', loss='mean_squared_error')
+
     model.fit(features_set, labels, epochs=100, batch_size=32)
+    model.save('intermediate_data/models/GME')
 
     raw_test_data = pandas.read_csv('intermediate_data/prices/GME.csv')
     clean_test_data = raw_test_data.iloc[:, 1:2].values
