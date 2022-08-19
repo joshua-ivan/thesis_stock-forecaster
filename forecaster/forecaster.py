@@ -1,11 +1,5 @@
 from utilities.input_validation import check_float
-from sklearn.preprocessing import MinMaxScaler
-from keras.models import Sequential, load_model
-from keras.layers import Dense
-from keras.layers import LSTM
-from keras.layers import Dropout
 from datetime import datetime
-from matplotlib import pyplot
 import utilities.date_util as date_util
 import config
 import pmdarima
