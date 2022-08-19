@@ -1,8 +1,6 @@
 from forecaster import forecaster
-from datetime import datetime
 import unittest
 import pandas
-import numpy
 
 
 class ForecasterTests(unittest.TestCase):
