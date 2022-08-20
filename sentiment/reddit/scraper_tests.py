@@ -152,5 +152,10 @@ class RedditScraperTests(unittest.TestCase):
             call(f'posts/test_query/{dates[0]}', 't3_test0', f'test title\n\n\ntest contents')
         ])
 
+    def test_scrape_recent_subreddit_content(self):
+        scraper = RedditScraper('US/Pacific')
+        scraper.scrape_recent_subreddit_content('')
+        pass
+
     if __name__ == '__main__':
         unittest.main()

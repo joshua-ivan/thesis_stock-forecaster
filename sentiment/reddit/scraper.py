@@ -20,6 +20,35 @@ class RedditScraper:
         self.api = RedditAPI()
         setup_reddit_logger()
 
+    def scrape_recent_subreddit_content(self, after):
+        last_fullname = after
+        submissions = self.api.recent_subreddit_submissions(last_fullname)
+        for submission in submissions:
+            submission_filename = f'{submission.created_utc} - {submission.fullname}'
+            submission_contents =\
+                f'SUBMISSION\n\n\n{submission.title}\n\n\n{submission.score}\n\n\n{submission.selftext}'
+            file_io.write_file(f'intermediate_data/posts/', submission_filename, submission_contents)
+
+            comment_forest = submission.comments
+            more_comments = True
+            while more_comments:
+                while True:
+                    try:
+                        more_comments = (len(comment_forest.replace_more()) > 0)
+                        break
+                    except Exception:
+                        continue
+            comment_list = comment_forest.list()
+            for comment in comment_list:
+                comment_filename = f'{comment.created_utc} - {comment.id}'
+                comment_contents =\
+                    f'COMMENT\n\n\n{submission_filename}\n\n\n{comment.score}\n\n\n{comment.body}'
+                file_io.write_file(f'intermediate_data/posts/', comment_filename, comment_contents)
+
+            last_fullname = submission.fullname
+        if last_fullname != after:
+            self.scrape_recent_subreddit_content(last_fullname)
+
     def scrape(self, sub, query, start_date, end_date, result_op, after):
         last_fullname = after
         submissions = self.api.search_subreddit(sub, query, last_fullname)
