@@ -1,8 +1,9 @@
-from unittest.mock import patch, call
+from unittest.mock import Mock, patch, call
 from sentiment.reddit.api import RedditAPI
 from sentiment.reddit.scraper import RedditScraper
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+from utilities import file_io
 import unittest
 import time
 
@@ -154,8 +155,77 @@ class RedditScraperTests(unittest.TestCase):
 
     def test_scrape_recent_subreddit_content(self):
         scraper = RedditScraper('US/Pacific')
-        scraper.scrape_recent_subreddit_content('')
-        pass
+        scraper.api = Mock()
+        scraper.scrape_comments = Mock()
+        mock_io = Mock()
+
+        scraper.api.recent_subreddit_submissions.return_value = []
+        scraper.scrape_recent_subreddit_content('', mock_io)
+        mock_io.assert_not_called()
+
+        scraper.api.reset_mock()
+        scraper.api.recent_subreddit_submissions.side_effect = [[Mock()], [Mock()], []]
+        scraper.scrape_recent_subreddit_content('', mock_io)
+        self.assertEqual(mock_io.write_file.call_count, 2)
+
+    def test_scrape_comments_no_comments(self):
+        scraper = RedditScraper('US/Pacific')
+        mock_submission = Mock()
+        mock_submission.comments.replace_more.return_value = []
+        mock_submission.comments.list.return_value = []
+        mock_io = Mock()
+
+        scraper.scrape_comments(mock_submission, mock_io)
+
+        mock_submission.comments.replace_more.assert_called_once()
+        mock_io.assert_not_called()
+
+    def test_scrape_comments_many_comments(self):
+        scraper = RedditScraper('US/Pacific')
+
+        mock_comment_one = Mock()
+        mock_comment_one.created_utc = 555
+        mock_comment_one.id = 'bar'
+        mock_comment_one.score = 100
+        mock_comment_one.body = 'MOCK'
+
+        mock_comment_two = Mock()
+        mock_comment_two.created_utc = 556
+        mock_comment_two.id = 'baz'
+        mock_comment_two.score = 101
+        mock_comment_two.body = 'MOCK'
+
+        mock_submission = Mock()
+        mock_submission.created_utc = 500
+        mock_submission.fullname = 'foo'
+        mock_submission.comments.replace_more.return_value = []
+        mock_submission.comments.list.return_value = [mock_comment_one, mock_comment_two]
+
+        mock_io = Mock()
+
+        scraper.scrape_comments(mock_submission, mock_io)
+        mock_submission.comments.replace_more.assert_called_once()
+        mock_io.write_file.assert_has_calls([
+            call('intermediate_data/posts/', '555 - bar', 'COMMENT\n\n\n500 - foo\n\n\n100\n\n\nMOCK'),
+            call('intermediate_data/posts/', '556 - baz', 'COMMENT\n\n\n500 - foo\n\n\n101\n\n\nMOCK')
+        ])
+
+    def test_eager_load_comments(self):
+        scraper = RedditScraper('US/Pacific')
+        mock_submission = Mock()
+
+        mock_submission.comments.replace_more.return_value = []
+        scraper.eager_load_comments(mock_submission)
+        mock_submission.comments.replace_more.assert_called_once()
+
+        mock_submission.reset_mock()
+        mock_submission.comments.replace_more.side_effect = [['foo'], ['bar'], []]
+        scraper.eager_load_comments(mock_submission)
+        self.assertEqual(mock_submission.comments.replace_more.call_count, 3)
+
+    def test_run_recent_scraper(self):
+        scraper = RedditScraper('US/Pacific')
+        scraper.scrape_recent_subreddit_content('', file_io)
 
     if __name__ == '__main__':
         unittest.main()
