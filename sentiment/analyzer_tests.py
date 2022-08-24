@@ -15,3 +15,29 @@ class RedditScraperTests(unittest.TestCase):
         ra.tokenizer.sent_tokenize.assert_called_once()
         ra.sid.polarity_scores.assert_has_calls([])
         self.assertEqual(sentiment, 0.5)
+
+    def test_parse_tickers(self):
+        ra = RedditAnalyzer()
+        ra.tokenizer = Mock()
+
+        test_cases = [
+            ['mock', 'text'],
+            ['MOCK', 'text'],
+            ['$MOCK', 'text'],
+            ['MOCK^A', 'text'],
+            ['$MOCK^A', 'text'],
+            ['MOCK', 'TEXT']
+        ]
+        expected_values = [
+            [],
+            ['MOCK'],
+            ['MOCK'],
+            ['MOCK'],
+            ['MOCK'],
+            ['MOCK', 'TEXT']
+        ]
+        for i in range(0, len(test_cases)):
+            ra.tokenizer.reset_mock()
+            ra.tokenizer.word_tokenize.return_value = test_cases[i]
+            tickers = ra.parse_tickers('')
+            self.assertCountEqual(tickers, expected_values[i])
