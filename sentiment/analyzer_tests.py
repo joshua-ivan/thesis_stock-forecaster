@@ -1,3 +1,4 @@
+from sentiment.post_sentiment import PostSentiment
 from sentiment.analyzer import RedditAnalyzer
 from unittest.mock import Mock
 import unittest
@@ -124,15 +125,25 @@ class RedditScraperTests(unittest.TestCase):
 
         for i in range(0, len(scaler_values)):
             mock_scaler.transform.return_value = scaler_values[i]
-            comment_tuple = ra.process_post(post_dir, '1660971180.0 - il14kjj', mock_scaler)
-            self.assertEqual(comment_tuple, (['GCT'], expected_values[i][0]))
-            submission_tuple = ra.process_post(post_dir, '1660970721.0 - t3_wsygps', mock_scaler)
-            self.assertEqual(submission_tuple, (['GCT'], expected_values[i][1]))
+
+            comment_filename = '1660971180.0 - il14kjj'
+            comment_sentiment = ra.process_post(post_dir, comment_filename, mock_scaler)
+            expected_comment_sentiment = PostSentiment(comment_filename, ['GCT'], expected_values[i][0])
+            self.assertEqual(comment_sentiment.filename, expected_comment_sentiment.filename)
+            self.assertEqual(comment_sentiment.tickers, expected_comment_sentiment.tickers)
+            self.assertEqual(comment_sentiment.sentiment, expected_comment_sentiment.sentiment)
+
+            submission_filename = '1660970721.0 - t3_wsygps'
+            submission_sentiment = ra.process_post(post_dir, submission_filename, mock_scaler)
+            expected_submission_sentiment = PostSentiment(submission_filename, ['GCT'], expected_values[i][1])
+            self.assertEqual(submission_sentiment.filename, expected_submission_sentiment.filename)
+            self.assertEqual(submission_sentiment.tickers, expected_submission_sentiment.tickers)
+            self.assertEqual(submission_sentiment.sentiment, expected_submission_sentiment.sentiment)
 
     def test_extract_sentiment(self):
         ra = RedditAnalyzer()
-        ra.extract_sentiment(
-            int(datetime.datetime(2022, 8, 23, 0, 0, 0).timestamp()),
-            int(datetime.datetime(2022, 8, 23, 0, 30, 0).timestamp())
-        )
+        # ra.extract_sentiment(
+        #     int(datetime.datetime(2022, 8, 23, 0, 0, 0).timestamp()),
+        #     int(datetime.datetime(2022, 8, 23, 0, 30, 0).timestamp())
+        # )
         # ra.train_score_scaler()

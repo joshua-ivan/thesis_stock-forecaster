@@ -1,5 +1,6 @@
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize as nltk_tokenizer
+from sentiment.post_sentiment import PostSentiment
 from sentiment.scaler import ScoreScaler
 from utilities import file_io
 import pandas
@@ -67,7 +68,7 @@ class RedditAnalyzer:
         elif post_type == 'COMMENT':
             submission_filename = file[1]
             submission_sentiment = self.process_post(post_dir, submission_filename, scaler)
-            tickers = submission_sentiment[0]
+            tickers = submission_sentiment.tickers
         else:
             # malformed file contents; skip
             return
@@ -78,8 +79,7 @@ class RedditAnalyzer:
 
         vote_score = int(file[2])
         weighted_sentiment = raw_sentiment * scaler.transform(vote_score)
-        sentiment_tuple = (tickers, weighted_sentiment)
-        return sentiment_tuple
+        return PostSentiment(filename, tickers, weighted_sentiment)
 
     def extract_sentiment(self, start_time, end_time):
         all_posts_dir = 'intermediate_data/posts'
@@ -91,6 +91,4 @@ class RedditAnalyzer:
         time_filter_df = self.filter_dataframe(all_posts_df, start_time, end_time)
         post_sentiments = [(lambda post: (post, self.process_post(all_posts_dir, post, scaler)))(post)
                            for post in time_filter_df['filename']]
-        for post in post_sentiments:
-            print(post)
-
+        print(post_sentiments)
