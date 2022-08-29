@@ -1,6 +1,7 @@
 from sentiment.analyzer import RedditAnalyzer
 from unittest.mock import Mock
 import unittest
+import datetime
 import pandas
 import numpy
 
@@ -23,20 +24,20 @@ class RedditScraperTests(unittest.TestCase):
         ra.tokenizer = Mock()
 
         test_cases = [
-            ['mock', 'text'],
-            ['MOCK', 'text'],
-            ['$MOCK', 'text'],
-            ['MOCK^A', 'text'],
-            ['$MOCK^A', 'text'],
-            ['MOCK', 'TEXT']
+            ['aapl', 'text'],
+            ['AAPL', 'text'],
+            ['$AAPL', 'text'],
+            ['AAPL^A', 'text'],
+            ['$AAPL^A', 'text'],
+            ['AAPL', 'TEXT']
         ]
         expected_values = [
             [],
-            ['MOCK'],
-            ['MOCK'],
-            ['MOCK'],
-            ['MOCK'],
-            ['MOCK', 'TEXT']
+            ['AAPL'],
+            ['AAPL'],
+            ['AAPL'],
+            ['AAPL'],
+            ['AAPL']
         ]
         for i in range(0, len(test_cases)):
             ra.tokenizer.reset_mock()
@@ -109,6 +110,29 @@ class RedditScraperTests(unittest.TestCase):
                 '1660970764.0 - il13wu8'
             ])))
 
-    def test_train_score_scaler(self):
+    def test_process_post(self):
         ra = RedditAnalyzer()
+        post_dir = 'mock_data/sentiment/analyzer/process_post'
+        mock_scaler = Mock()
+
+        scaler_values = [1, 2, -2]
+        expected_values = [
+            [-0.1965, -0.3612],
+            [-0.393, -0.7224],
+            [0.393, 0.7224]
+        ]
+
+        for i in range(0, len(scaler_values)):
+            mock_scaler.transform.return_value = scaler_values[i]
+            comment_tuple = ra.process_post(post_dir, '1660971180.0 - il14kjj', mock_scaler)
+            self.assertEqual(comment_tuple, (['GCT'], expected_values[i][0]))
+            submission_tuple = ra.process_post(post_dir, '1660970721.0 - t3_wsygps', mock_scaler)
+            self.assertEqual(submission_tuple, (['GCT'], expected_values[i][1]))
+
+    def test_extract_sentiment(self):
+        ra = RedditAnalyzer()
+        ra.extract_sentiment(
+            int(datetime.datetime(2022, 8, 23, 0, 0, 0).timestamp()),
+            int(datetime.datetime(2022, 8, 23, 0, 30, 0).timestamp())
+        )
         # ra.train_score_scaler()

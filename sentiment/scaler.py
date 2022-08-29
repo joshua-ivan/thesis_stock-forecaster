@@ -2,9 +2,9 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy
 
 
-class SentimentScaler:
-    neg_scaler = MinMaxScaler(feature_range=(-2, 0))
-    pos_scaler = MinMaxScaler(feature_range=(0, 2))
+class ScoreScaler:
+    neg_scaler = MinMaxScaler(feature_range=(-2, -1))
+    pos_scaler = MinMaxScaler(feature_range=(1, 2))
 
     def format_values(self, v):
         return numpy.array(v).reshape(-1, 1)
@@ -25,4 +25,4 @@ class SentimentScaler:
         elif raw_score < 0:
             return self.neg_scaler.transform(formatted_value)
         else:
-            return 0
+            return 1
