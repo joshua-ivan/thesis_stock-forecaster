@@ -3,6 +3,8 @@ from nltk import tokenize as nltk_tokenizer
 from sentiment.post_sentiment import PostSentiment
 from sentiment.scaler import ScoreScaler
 from utilities import file_io
+from itertools import chain
+from collections import Counter
 import pandas
 import numpy
 import datetime
@@ -89,6 +91,18 @@ class RedditAnalyzer:
         scaler = self.train_score_scaler(all_posts_dir, scaler_train_df)
 
         time_filter_df = self.filter_dataframe(all_posts_df, start_time, end_time)
-        post_sentiments = [(lambda post: (post, self.process_post(all_posts_dir, post, scaler)))(post)
+        post_sentiments = [(lambda post: self.process_post(all_posts_dir, post, scaler))(post)
                            for post in time_filter_df['filename']]
-        print(post_sentiments)
+
+        post_sentiments_df = pandas.DataFrame([vars(ps) for ps in post_sentiments])
+        freq = pandas.Series(Counter(chain.from_iterable(post_sentiments_df['tickers']))).sort_values()
+        print(freq)
+
+    def sandbox(self):
+        # all_posts_dir = 'intermediate_data/posts'
+        # all_posts_df = self.build_posts_dataframe(all_posts_dir)
+        # all_tickers = [(lambda filename: self.parse_tickers(file_io.read_file(filename)))
+        #                (f'intermediate_data/posts/{filename}')
+        #                for filename in all_posts_df['filename']]
+        # print(all_tickers)
+        print(self.parse_tickers(file_io.read_file('intermediate_data/posts/1661016494.0 - il38vsz')))

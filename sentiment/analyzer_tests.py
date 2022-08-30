@@ -141,9 +141,15 @@ class RedditScraperTests(unittest.TestCase):
             self.assertEqual(submission_sentiment.sentiment, expected_submission_sentiment.sentiment)
 
     def test_extract_sentiment(self):
-        ra = RedditAnalyzer()
+        # ra = RedditAnalyzer()
         # ra.extract_sentiment(
         #     int(datetime.datetime(2022, 8, 23, 0, 0, 0).timestamp()),
         #     int(datetime.datetime(2022, 8, 23, 0, 30, 0).timestamp())
         # )
-        # ra.train_score_scaler()
+        pass
+
+    def test_sandbox(self):
+        # ra = RedditAnalyzer()
+        # ra.sandbox()
+        pass
+
