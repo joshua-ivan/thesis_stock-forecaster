@@ -25,20 +25,20 @@ class RedditScraperTests(unittest.TestCase):
         ra.tokenizer = Mock()
 
         test_cases = [
-            ['aapl', 'text'],
-            ['AAPL', 'text'],
-            ['$AAPL', 'text'],
-            ['AAPL^A', 'text'],
-            ['$AAPL^A', 'text'],
-            ['AAPL', 'TEXT']
+            ['abr', 'text'],
+            ['ABR', 'text'],
+            ['$ABR', 'text'],
+            ['ABR^D', 'text'],
+            ['$ABR^D', 'text'],
+            ['ABR', 'TEXT']
         ]
         expected_values = [
             [],
-            ['AAPL'],
-            ['AAPL'],
-            ['AAPL'],
-            ['AAPL'],
-            ['AAPL']
+            [],
+            ['$ABR'],
+            [],
+            ['$ABR^D'],
+            []
         ]
         for i in range(0, len(test_cases)):
             ra.tokenizer.reset_mock()
@@ -128,14 +128,14 @@ class RedditScraperTests(unittest.TestCase):
 
             comment_filename = '1660971180.0 - il14kjj'
             comment_sentiment = ra.process_post(post_dir, comment_filename, mock_scaler)
-            expected_comment_sentiment = PostSentiment(comment_filename, ['GCT'], expected_values[i][0])
+            expected_comment_sentiment = PostSentiment(comment_filename, ['$GCT'], expected_values[i][0])
             self.assertEqual(comment_sentiment.filename, expected_comment_sentiment.filename)
             self.assertEqual(comment_sentiment.tickers, expected_comment_sentiment.tickers)
             self.assertEqual(comment_sentiment.sentiment, expected_comment_sentiment.sentiment)
 
             submission_filename = '1660970721.0 - t3_wsygps'
             submission_sentiment = ra.process_post(post_dir, submission_filename, mock_scaler)
-            expected_submission_sentiment = PostSentiment(submission_filename, ['GCT'], expected_values[i][1])
+            expected_submission_sentiment = PostSentiment(submission_filename, ['$GCT'], expected_values[i][1])
             self.assertEqual(submission_sentiment.filename, expected_submission_sentiment.filename)
             self.assertEqual(submission_sentiment.tickers, expected_submission_sentiment.tickers)
             self.assertEqual(submission_sentiment.sentiment, expected_submission_sentiment.sentiment)
@@ -149,7 +149,7 @@ class RedditScraperTests(unittest.TestCase):
         pass
 
     def test_sandbox(self):
-        # ra = RedditAnalyzer()
-        # ra.sandbox()
+        ra = RedditAnalyzer()
+        ra.sandbox()
         pass
 

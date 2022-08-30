@@ -1,6 +1,6 @@
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from nltk import tokenize as nltk_tokenizer
 from sentiment.post_sentiment import PostSentiment
+from sentiment.tokenizer import TickerTokenizer
 from sentiment.scaler import ScoreScaler
 from utilities import file_io
 from itertools import chain
@@ -15,18 +15,16 @@ import os
 class RedditAnalyzer:
     def __init__(self):
         self.sid = SentimentIntensityAnalyzer()
-        self.tokenizer = nltk_tokenizer
         self.stock_tickers = pandas.read_csv('intermediate_data/tickers.csv')
+        self.tokenizer = TickerTokenizer(self.stock_tickers['Symbol'])
         self.os = os
 
     def parse_tickers(self, text):
         words = self.tokenizer.word_tokenize(text)
-        pattern = re.compile('^\\$?[A-Z]+(\\^[A-Z])?$')
+        pattern = re.compile('^\\$[A-Z]+(\\^[A-Z])?$')
         tickers = [word for word in words if pattern.match(word)]
-        for i in range(0, len(tickers)):
-            tickers[i] = tickers[i].replace('$', '')
-            tickers[i] = tickers[i].split('^')[0]
-        return [ticker for ticker in tickers if self.stock_tickers.loc[self.stock_tickers['Symbol'] == ticker].size > 0]
+        return [ticker for ticker in tickers
+                if self.stock_tickers.loc[self.stock_tickers['Symbol'] == ticker].size > 0]
 
     def raw_score(self, text):
         sentences = self.tokenizer.sent_tokenize(text)
@@ -97,12 +95,3 @@ class RedditAnalyzer:
         post_sentiments_df = pandas.DataFrame([vars(ps) for ps in post_sentiments])
         freq = pandas.Series(Counter(chain.from_iterable(post_sentiments_df['tickers']))).sort_values()
         print(freq)
-
-    def sandbox(self):
-        # all_posts_dir = 'intermediate_data/posts'
-        # all_posts_df = self.build_posts_dataframe(all_posts_dir)
-        # all_tickers = [(lambda filename: self.parse_tickers(file_io.read_file(filename)))
-        #                (f'intermediate_data/posts/{filename}')
-        #                for filename in all_posts_df['filename']]
-        # print(all_tickers)
-        print(self.parse_tickers(file_io.read_file('intermediate_data/posts/1661016494.0 - il38vsz')))
