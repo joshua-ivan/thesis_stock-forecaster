@@ -156,10 +156,31 @@ class RedditScraperTests(unittest.TestCase):
         binarized_df = ra.build_sentiment_dataframe(post_sentiments)
         pandas.testing.assert_frame_equal(expected_df, binarized_df)
 
+    def test_extract_frequency(self):
+        ra = RedditAnalyzer()
+        post_sentiments = [
+            PostSentiment('mock_file_1', ['$MOCK'], 1.0),
+            PostSentiment('mock_file_2', ['$MOCK'], 1.0),
+            PostSentiment('mock_file_3', ['$MOCK'], 1.0),
+            PostSentiment('test_file', ['$TEST'], 1.0),
+            PostSentiment('mock_test_file', ['$MOCK', '$TEST'], 1.0),
+        ]
+        expected = pandas.Series({'$MOCK': 4, '$TEST': 2})
+        actual = ra.extract_frequency(post_sentiments)
+        pandas.testing.assert_series_equal(expected, actual)
+
     def test_extract_sentiment(self):
+        ra = RedditAnalyzer()
+        hottest_stock = ra.extract_sentiment(
+            int(datetime.datetime(2022, 8, 23, 0, 0, 0).timestamp()),
+            int(datetime.datetime(2022, 8, 23, 0, 30, 0).timestamp())
+        )
+        print(hottest_stock)
+
+    def test_twenty_four_hour_freqency(self):
         # ra = RedditAnalyzer()
-        # ra.extract_sentiment(
-        #     int(datetime.datetime(2022, 8, 23, 0, 0, 0).timestamp()),
-        #     int(datetime.datetime(2022, 8, 23, 0, 30, 0).timestamp())
-        # )
+        # start_time = int(datetime.datetime(2022, 8, 22, 0, 0, 0).timestamp())
+        # end_time = int(datetime.datetime(2022, 8, 23, 0, 0, 0).timestamp())
+        # for time in range(start_time, end_time, 60):
+        #     ra.extract_sentiment(time, time + (60 * 60))
         pass

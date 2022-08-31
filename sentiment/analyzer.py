@@ -89,6 +89,11 @@ class RedditAnalyzer:
         post_sentiments_df.drop(['tickers'], axis=1, inplace=True)
         return pandas.concat([post_sentiments_df, matrix], axis=1)
 
+    def extract_frequency(self, post_sentiments):
+        post_sentiments_df = pandas.DataFrame([vars(ps) for ps in post_sentiments])
+        freq = pandas.Series(Counter(chain.from_iterable(post_sentiments_df['tickers']))).sort_values(ascending=False)
+        return freq
+
     def extract_sentiment(self, start_time, end_time):
         all_posts_dir = 'intermediate_data/posts'
         all_posts_df = self.build_posts_dataframe(all_posts_dir)
@@ -100,6 +105,7 @@ class RedditAnalyzer:
         post_sentiments = [(lambda post: self.process_post(all_posts_dir, post, scaler))(post)
                            for post in time_filter_df['filename']]
 
+        frequency_series = self.extract_frequency(post_sentiments)
+        most_frequent_ticker = frequency_series.keys()[0]
         binarized_df = self.build_sentiment_dataframe(post_sentiments)
-        print(binarized_df.loc[binarized_df['$BBBY'] == 1])
-        print(binarized_df.loc[binarized_df['$BBBY'] == 1]['sentiment'].mean())
+        return most_frequent_ticker, binarized_df.loc[binarized_df[most_frequent_ticker] == 1]['sentiment'].mean()
