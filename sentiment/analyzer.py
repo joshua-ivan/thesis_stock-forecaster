@@ -1,4 +1,5 @@
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from sklearn.preprocessing import MultiLabelBinarizer
 from sentiment.post_sentiment import PostSentiment
 from sentiment.tokenizer import TickerTokenizer
 from sentiment.scaler import ScoreScaler
@@ -81,6 +82,13 @@ class RedditAnalyzer:
         weighted_sentiment = raw_sentiment * scaler.transform(vote_score)
         return PostSentiment(filename, tickers, weighted_sentiment)
 
+    def build_sentiment_dataframe(self, post_sentiments):
+        post_sentiments_df = pandas.DataFrame([vars(ps) for ps in post_sentiments])
+        mlb = MultiLabelBinarizer()
+        matrix = pandas.DataFrame(mlb.fit_transform(post_sentiments_df['tickers']), columns=mlb.classes_)
+        post_sentiments_df.drop(['tickers'], axis=1, inplace=True)
+        return pandas.concat([post_sentiments_df, matrix], axis=1)
+
     def extract_sentiment(self, start_time, end_time):
         all_posts_dir = 'intermediate_data/posts'
         all_posts_df = self.build_posts_dataframe(all_posts_dir)
@@ -92,6 +100,6 @@ class RedditAnalyzer:
         post_sentiments = [(lambda post: self.process_post(all_posts_dir, post, scaler))(post)
                            for post in time_filter_df['filename']]
 
-        post_sentiments_df = pandas.DataFrame([vars(ps) for ps in post_sentiments])
-        freq = pandas.Series(Counter(chain.from_iterable(post_sentiments_df['tickers']))).sort_values()
-        print(freq)
+        binarized_df = self.build_sentiment_dataframe(post_sentiments)
+        print(binarized_df.loc[binarized_df['$BBBY'] == 1])
+        print(binarized_df.loc[binarized_df['$BBBY'] == 1]['sentiment'].mean())

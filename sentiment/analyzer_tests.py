@@ -140,6 +140,22 @@ class RedditScraperTests(unittest.TestCase):
             self.assertEqual(submission_sentiment.tickers, expected_submission_sentiment.tickers)
             self.assertEqual(submission_sentiment.sentiment, expected_submission_sentiment.sentiment)
 
+    def test_build_sentiment_dataframe(self):
+        ra = RedditAnalyzer()
+        post_sentiments = [
+            PostSentiment('mock_file', ['$MOCK'], 1.0),
+            PostSentiment('test_file', ['$TEST'], 1.0),
+            PostSentiment('mock_test_file', ['$MOCK', '$TEST'], 1.0),
+        ]
+        expected_df = pandas.DataFrame({
+            'filename': ['mock_file', 'test_file', 'mock_test_file'],
+            'sentiment': [1.0, 1.0, 1.0],
+            '$MOCK': [1, 0, 1],
+            '$TEST': [0, 1, 1]
+        })
+        binarized_df = ra.build_sentiment_dataframe(post_sentiments)
+        pandas.testing.assert_frame_equal(expected_df, binarized_df)
+
     def test_extract_sentiment(self):
         # ra = RedditAnalyzer()
         # ra.extract_sentiment(
@@ -147,9 +163,3 @@ class RedditScraperTests(unittest.TestCase):
         #     int(datetime.datetime(2022, 8, 23, 0, 30, 0).timestamp())
         # )
         pass
-
-    def test_sandbox(self):
-        ra = RedditAnalyzer()
-        ra.sandbox()
-        pass
-
