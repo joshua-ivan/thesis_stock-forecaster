@@ -1,28 +1,23 @@
+from trader.price_fetcher import PriceFetcher
 from trader.position import Position
-import yfinance
+from datetime import datetime, timezone, timedelta
 import pandas
 import random
-import os
-from datetime import datetime, timezone, timedelta
 
 
-default_stock_dir = 'intermediate_data/prices'
 default_ticker_csv = 'intermediate_data/tickers.csv'
 
 
 class DartboardInvestor:
     def __init__(self, start_date, end_date, tickers=pandas.read_csv(default_ticker_csv),
-                 stock_dir=default_stock_dir, yf=yfinance, pd=pandas, rng=random, op_sys=os):
+                 rng=random, pf=PriceFetcher()):
         self.open_positions = []
         self.portfolio_value = 0.0
         self.start_date = start_date
         self.end_date = end_date
         self.tickers = tickers
-        self.stock_dir = stock_dir
-        self.yfinance = yf
-        self.pandas = pd
         self.rng = rng
-        self.os = op_sys
+        self.price_fetcher = pf
 
     def check_open_positions(self, closing_datetime):
         for i in range(len(self.open_positions) - 1, -1, -1):
@@ -32,7 +27,7 @@ class DartboardInvestor:
     def close_position(self, index, closing_datetime):
         position = self.open_positions[index]
         opening_value = position.price * position.quantity
-        current_price = self.get_price(position.ticker, closing_datetime)
+        current_price = self.price_fetcher.get_price(position.ticker, closing_datetime, self.start_date, self.end_date)
         closing_value = current_price * position.quantity
 
         if position.leverage_type == 'SHORT':
@@ -41,38 +36,20 @@ class DartboardInvestor:
             self.portfolio_value += (closing_value - opening_value)
 
         position = self.open_positions.pop(index)
-        # print(f'Closed position: {position}\nPortfolio value: {self.portfolio_value}')
-
-    def get_price(self, ticker, time):
-        file = f'{self.stock_dir}/{ticker}.csv'
-        if not self.os.path.exists(file):
-            self.get_stock_history(ticker)
-        stock_prices = self.pandas.read_csv(file)
-        if 'Datetime' not in stock_prices.columns:
-            return -1
-        price = stock_prices.loc[stock_prices['Datetime'] == time]
-        if len(price) > 0:
-            return price['Close'].values[0]
-        else:
-            return -1
-
-    def get_stock_history(self, ticker):
-        history = self.yfinance.Ticker(ticker).history(
-            start=self.start_date, end=self.end_date, period='1d', interval='1m')
-        history.to_csv(f'{self.stock_dir}/{ticker}.csv')
+        print(f'Closed position: {position}\nPortfolio value: {self.portfolio_value}')
 
     def new_open_position(self, date_time):
         stock, price = '', -1
         while price < 0:
             stock = self.tickers.iloc[self.rng.randint(0, len(self.tickers) - 1)]['Symbol'].replace('$', '')
-            price = self.get_price(stock, date_time)
+            price = self.price_fetcher.get_price(stock, date_time, self.start_date, self.end_date)
 
         min_cash_to_spend = 10000.00
         shares = int(min_cash_to_spend / price) + (min_cash_to_spend % price > 0)
         leverage_type = 'SHORT' if self.rng.randint(0, 99) < 50 else 'LONG'
         position = Position(stock, leverage_type, shares, price, date_time)
         self.open_positions.append(position)
-        # print(f'New position: {position}')
+        print(f'New position: {position}')
 
     def run_simulation(self):
         start_datetime = datetime.strptime(self.start_date, '%Y-%m-%d')
