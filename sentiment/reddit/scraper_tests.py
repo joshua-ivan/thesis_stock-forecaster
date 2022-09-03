@@ -225,7 +225,7 @@ class RedditScraperTests(unittest.TestCase):
 
     def test_run_recent_scraper(self):
         scraper = RedditScraper('US/Pacific')
-        scraper.scrape_recent_subreddit_content('', file_io)
+        # scraper.scrape_recent_subreddit_content('', file_io)
 
     if __name__ == '__main__':
         unittest.main()

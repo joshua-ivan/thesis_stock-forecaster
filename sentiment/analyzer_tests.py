@@ -175,7 +175,7 @@ class RedditScraperTests(unittest.TestCase):
             int(datetime.datetime(2022, 8, 23, 0, 0, 0).timestamp()),
             int(datetime.datetime(2022, 8, 23, 0, 30, 0).timestamp())
         )
-        print(hottest_stock)
+        # print(hottest_stock)
 
     def test_twenty_four_hour_freqency(self):
         # ra = RedditAnalyzer()

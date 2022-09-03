@@ -1,3 +1,4 @@
+from trader.position import Position
 import yfinance
 import pandas
 import random
@@ -7,25 +8,6 @@ from datetime import datetime, timezone, timedelta
 
 default_stock_dir = 'intermediate_data/prices'
 default_ticker_csv = 'intermediate_data/tickers.csv'
-
-
-class Position:
-    def __init__(self, ticker, leverage_type, quantity, price, date_time):
-        self.ticker = ticker
-        self.leverage_type = leverage_type
-        self.price = price
-        self.quantity = quantity
-        self.date_time = date_time
-
-    def __eq__(self, other):
-        return self.ticker == other.ticker and\
-            self.leverage_type == other.leverage_type and\
-            self.price == other.price and\
-            self.quantity == other.quantity and\
-            self.date_time == other.date_time
-
-    def __str__(self):
-        return f'Position: {self.ticker} {self.leverage_type} - {self.quantity} @ {self.price} on {self.date_time}'
 
 
 class DartboardInvestor:
@@ -59,7 +41,7 @@ class DartboardInvestor:
             self.portfolio_value += (closing_value - opening_value)
 
         position = self.open_positions.pop(index)
-        print(f'Closed position: {position}\nPortfolio value: {self.portfolio_value}')
+        # print(f'Closed position: {position}\nPortfolio value: {self.portfolio_value}')
 
     def get_price(self, ticker, time):
         file = f'{self.stock_dir}/{ticker}.csv'
@@ -90,7 +72,7 @@ class DartboardInvestor:
         leverage_type = 'SHORT' if self.rng.randint(0, 99) < 50 else 'LONG'
         position = Position(stock, leverage_type, shares, price, date_time)
         self.open_positions.append(position)
-        print(f'New position: {position}')
+        # print(f'New position: {position}')
 
     def run_simulation(self):
         start_datetime = datetime.strptime(self.start_date, '%Y-%m-%d')
