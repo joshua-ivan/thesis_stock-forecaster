@@ -15,11 +15,14 @@ class PriceFetcher:
 
     def get_price(self, ticker, time, start_date, end_date):
         stock_history = self.get_stock_history(ticker, start_date, end_date)
-        if 'Datetime' not in stock_history.columns:
+        if stock_history.index.name != 'Datetime':
             return -1
 
-        price = stock_history.loc[stock_history['Datetime'] == time]
-        return price['Close'].values[0] if len(price) > 0 else -1
+        try:
+            index = list(stock_history.index.astype('string')).index(time)
+            return stock_history.iloc[index]['Close']
+        except ValueError:
+            return -1
 
     def get_stock_history(self, ticker, start_date, end_date):
         history = self.yfinance.Ticker(ticker).history(start=start_date, end=end_date, period='1d', interval='1m')

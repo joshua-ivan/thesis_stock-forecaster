@@ -1,6 +1,7 @@
 from trader.machine import MachineInvestor
 from trader.position import Position
 from unittest.mock import Mock, call
+from datetime import datetime
 import unittest
 
 
@@ -48,5 +49,5 @@ class MachineInvestorTests(unittest.TestCase):
 
     def test_new_open_position(self):
         mi = MachineInvestor(start_date='2022-08-22', end_date='2022-08-23')
-        mi.new_open_position()
+        mi.new_open_position('2022-08-23 09:30:00-04:00')
         pass

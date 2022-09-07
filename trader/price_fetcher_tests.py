@@ -8,7 +8,8 @@ class PriceFetcherTests(unittest.TestCase):
     def test_get_price(self):
         pf = PriceFetcher(stock_dir='mock_data/trader/prices')
         pf.get_stock_history = Mock()
-        pf.get_stock_history.return_value = pandas.read_csv('mock_data/trader/prices/GME.csv')
+        pf.get_stock_history.return_value = pandas.read_csv('mock_data/trader/prices/GME.csv',
+                                                            index_col=0, parse_dates=True)
         start_date, end_date = '2022-08-15', '2022-08-16'
 
         price = pf.get_price('GME', '2022-08-15 10:00:00-04:00', start_date, end_date)
@@ -22,12 +23,14 @@ class PriceFetcherTests(unittest.TestCase):
         start_date, end_date = '2022-08-15', '2022-08-16'
 
         pf.get_stock_history.return_value = pandas.DataFrame(
-            columns=['Datetime', 'Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits'])
+            columns=['Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits'],
+            index=pandas.Index([], name='Datetime'))
         price = pf.get_price('GME', '2022-08-15 10:00:00-04:00', start_date, end_date)
         self.assertEqual(-1, price)
 
         pf.get_stock_history.return_value = pandas.DataFrame(
-            columns=['Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume'])
+            columns=['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume'],
+            index=pandas.Index([], name='Date'))
         price = pf.get_price('GME', '2022-08-15 10:00:00-04:00', start_date, end_date)
         self.assertEqual(-1, price)
 

@@ -93,3 +93,11 @@ class RedditScraperTests(unittest.TestCase):
         history = pandas.read_csv('mock_data/forecaster/MOCK.csv')
         self.assertEqual(date_util.get_stock_action_date(history, '2021-12-31'), '2021-12-31')
         self.assertEqual(date_util.get_stock_action_date(history, '2022-01-01'), '2021-12-31')
+
+    def test_datetime_string_to_posix(self):
+        expected = 1661301000.0
+        self.assertEqual(expected, date_util.datetime_string_to_posix('2022-08-23 13:30:00-04:00'))
+
+    def test_datetime_string_to_yfinance_dates(self):
+        expected = '2022-08-22', '2022-08-24'
+        self.assertEqual(expected, date_util.datetime_string_to_yfinance_dates('2022-08-23 13:30:00-04:00'))

@@ -1,6 +1,6 @@
 from utilities.input_validation import check_positive_int, check_isoformat_date_string, check_nonempty_string
 from collections import deque
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 
 
 def generate_aggregate_columns(end_date, timeframe_days, interval):
@@ -54,3 +54,15 @@ def get_stock_action_date(history, raw_date):
     while len(history[history['Date'] == action_date.isoformat()]) <= 0:
         action_date = action_date - timedelta(days=1)
     return action_date.isoformat()
+
+
+def datetime_string_to_posix(datetime_string):
+    dt = datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S-04:00')
+    return dt.replace(hour=(dt.hour + 4)).timestamp()
+
+
+def datetime_string_to_yfinance_dates(datetime_string):
+    dt = datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S-04:00')
+    start_date = dt.replace(day=(dt.day - 1)).strftime('%Y-%m-%d')
+    end_date = dt.replace(day=(dt.day + 1)).strftime('%Y-%m-%d')
+    return start_date, end_date
