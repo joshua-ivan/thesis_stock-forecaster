@@ -70,7 +70,7 @@ class DartboardTests(unittest.TestCase):
 
     def test_live(self):
         dbi = DartboardInvestor(start_date='2022-08-15', end_date='2022-08-16')
-        dbi.run_simulation()
-        print(dbi.portfolio_value)
+        # dbi.run_simulation()
+        # print(dbi.portfolio_value)
         for position in dbi.open_positions:
             print(position)
