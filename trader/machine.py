@@ -3,7 +3,7 @@ from forecaster.lstm_forecaster import LSTMForecaster
 from trader.price_fetcher import PriceFetcher
 from trader.position import Position
 from utilities.date_util import datetime_string_to_posix, datetime_string_to_yfinance_dates
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 class MachineInvestor:
@@ -52,23 +52,13 @@ class MachineInvestor:
     def get_forecast(self, ticker, position_datetime):
         return self.lstm_forecaster.generate_forecast(ticker, position_datetime, 360, 60)
 
-    def new_open_position(self, position_datetime):
-        sentiment = self.get_sentiment(position_datetime)
-        print(sentiment)
-
-        ticker = sentiment[0].replace('$', '')
-        price = self.get_price(ticker, position_datetime)
-        print(price)
-        forecast = self.get_forecast(ticker, position_datetime)
-        print(forecast)
-
+    def new_open_position(self, ticker, sentiment, price, forecast, position_datetime):
         min_cash_to_spend = 10000.00
         shares = int(min_cash_to_spend / price) + (min_cash_to_spend % price > 0)
         position = None
-        sentiment_rating = sentiment[1]
-        if (sentiment_rating > 0) and (forecast < 0):
+        if (sentiment > 0) and (forecast < 0):
             position = Position(ticker, 'SHORT', shares, price, position_datetime)
-        elif (sentiment_rating < 0) and (forecast > 0):
+        elif (sentiment < 0) and (forecast > 0):
             position = Position(ticker, 'LONG', shares, price, position_datetime)
 
         if position is not None:
@@ -76,3 +66,24 @@ class MachineInvestor:
             print(f'New position: {position}')
         else:
             print(f'No new position on {position_datetime}')
+
+    def run_simulation(self):
+        start_datetime = datetime.strptime(self.start_date, '%Y-%m-%d')
+        start_datetime = start_datetime.replace(hour=9, minute=30, second=0, tzinfo=timezone(-timedelta(hours=4)))
+        end_datetime = datetime.strptime(self.end_date, '%Y-%m-%d')
+        end_datetime = end_datetime.replace(
+            day=(end_datetime.day - 1), hour=16, minute=0, second=0, tzinfo=timezone(-timedelta(hours=4)))
+
+        current_datetime = start_datetime
+        while current_datetime < end_datetime:
+            current_datetime_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S-04:00')
+            self.check_open_positions(current_datetime_str)
+
+            sentiment = self.get_sentiment(current_datetime_str)
+            ticker = sentiment[0].replace('$', '')
+            price = self.get_price(ticker, current_datetime_str)
+            forecast = self.get_forecast(ticker, current_datetime_str)
+            print(f'sentiment: {sentiment} | price: {price} | forecast: {forecast}')
+
+            self.new_open_position(ticker, sentiment[1], price, forecast, current_datetime_str)
+            current_datetime = current_datetime + timedelta(minutes=1)
