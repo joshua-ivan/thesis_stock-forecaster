@@ -8,7 +8,6 @@ from itertools import chain
 from collections import Counter
 import pandas
 import numpy
-import datetime
 import re
 import os
 
@@ -18,7 +17,18 @@ class RedditAnalyzer:
         self.sid = SentimentIntensityAnalyzer()
         self.stock_tickers = pandas.read_csv('intermediate_data/tickers.csv')
         self.tokenizer = TickerTokenizer(self.stock_tickers['Symbol'])
+        self.scaler = ScoreScaler()
         self.os = os
+
+        self.all_posts_dir = 'intermediate_data/posts'
+        self.all_posts_df = self.build_posts_dataframe()
+
+        self.sentiment_memo = pandas.DataFrame(columns=['timestamp', 'filename', 'sentiment'])
+        self.sentiment_memo.set_index('timestamp')
+        self.sentiment_memo['timestamp'] = self.sentiment_memo['timestamp'].astype('int64')
+
+        self.file_io = file_io
+        self.file_memo = {}
 
     def parse_tickers(self, text):
         words = self.tokenizer.word_tokenize(text)
@@ -38,8 +48,8 @@ class RedditAnalyzer:
     def build_time_file_tuples(self, filenames):
         return [(lambda s: (s.split(' - ')[0].split('.')[0], s))(s) for s in filenames]
 
-    def build_posts_dataframe(self, posts_dir):
-        all_posts = self.os.listdir(posts_dir)
+    def build_posts_dataframe(self):
+        all_posts = self.os.listdir(self.all_posts_dir)
         tuples = self.build_time_file_tuples(all_posts)
         posts_df = pandas.DataFrame(tuples, columns=['timestamp', 'filename'])
         posts_df.set_index('timestamp')
@@ -49,18 +59,26 @@ class RedditAnalyzer:
     def filter_dataframe(self, dataframe, start_time, end_time):
         return dataframe[dataframe['timestamp'].between(start_time, end_time)]
 
-    def extract_post_scores(self, post_dir, filenames):
-        scores = [(lambda p: int(file_io.read_file(f'{post_dir}/{p}').split('\n\n\n')[2]))(p) for p in filenames]
+    def cached_read_file(self, filename):
+        cache = self.file_memo.get(filename)
+        if cache is not None:
+            return cache
+        else:
+            text = self.file_io.read_file(f'{self.all_posts_dir}/{filename}')
+            self.file_memo[filename] = text
+            return text
+
+    def extract_post_scores(self, filenames):
+        scores = [(lambda p: int(self.cached_read_file(p).split('\n\n\n')[2]))(p)
+                  for p in filenames]
         return numpy.array(scores)
 
-    def train_score_scaler(self, posts_dir, posts_df):
-        scores = self.extract_post_scores(posts_dir, posts_df['filename'])
-        scaler = ScoreScaler()
-        scaler.fit_transform(scores)
-        return scaler
+    def train_score_scaler(self, posts_df):
+        scores = self.extract_post_scores(posts_df['filename'])
+        self.scaler.fit_transform(scores)
 
-    def process_post(self, post_dir, filename, scaler):
-        file = file_io.read_file(f'{post_dir}/{filename}').split('\n\n\n')
+    def process_post(self, filename):
+        file = self.cached_read_file(filename).split('\n\n\n')
 
         post_type = file[0]
         if post_type == 'SUBMISSION':
@@ -68,7 +86,7 @@ class RedditAnalyzer:
             tickers = self.parse_tickers(title)
         elif post_type == 'COMMENT':
             submission_filename = file[1]
-            submission_sentiment = self.process_post(post_dir, submission_filename, scaler)
+            submission_sentiment = self.process_post(submission_filename)
             tickers = submission_sentiment.tickers
         else:
             # malformed file contents; skip
@@ -79,8 +97,18 @@ class RedditAnalyzer:
         raw_sentiment = self.raw_score(content)
 
         vote_score = int(file[2])
-        weighted_sentiment = raw_sentiment * scaler.transform(vote_score)
+        weighted_sentiment = raw_sentiment * self.scaler.transform(vote_score)
         return PostSentiment(filename, tickers, weighted_sentiment)
+
+    def cached_process_post(self, filename):
+        memo = self.sentiment_memo.loc[self.sentiment_memo['filename'] == filename]
+        if len(memo) > 0:
+            return memo['sentiment'].values[0]
+        else:
+            ps = self.process_post(filename)
+            timestamp = int(ps.filename.split(' - ')[0].split('.')[0])
+            self.sentiment_memo.loc[timestamp] = [timestamp, ps.filename, ps]
+            return ps
 
     def build_sentiment_dataframe(self, post_sentiments):
         post_sentiments_df = pandas.DataFrame([vars(ps) for ps in post_sentiments])
@@ -95,15 +123,12 @@ class RedditAnalyzer:
         return freq
 
     def extract_sentiment(self, start_time, end_time):
-        all_posts_dir = 'intermediate_data/posts'
-        all_posts_df = self.build_posts_dataframe(all_posts_dir)
+        scaler_train_df = self.filter_dataframe(self.all_posts_df, (end_time - (24 * 60 * 60)), end_time)
+        self.train_score_scaler(scaler_train_df)
 
-        scaler_train_df = self.filter_dataframe(all_posts_df, (end_time - (24 * 60 * 60)), end_time)
-        scaler = self.train_score_scaler(all_posts_dir, scaler_train_df)
-
-        time_filter_df = self.filter_dataframe(all_posts_df, start_time, end_time)
-        post_sentiments = [(lambda post: self.process_post(all_posts_dir, post, scaler))(post)
-                           for post in time_filter_df['filename']]
+        self.sentiment_memo = self.filter_dataframe(self.sentiment_memo, start_time, end_time)
+        time_filter_df = self.filter_dataframe(self.all_posts_df, start_time, end_time)
+        post_sentiments = [self.cached_process_post(post) for post in time_filter_df['filename']]
 
         frequency_series = self.extract_frequency(post_sentiments)
         most_frequent_ticker = frequency_series.keys()[0]
