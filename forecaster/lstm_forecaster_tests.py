@@ -1,5 +1,6 @@
 from forecaster.lstm_forecaster import LSTMForecaster
 from unittest.mock import Mock
+from datetime import datetime
 import unittest
 import numpy
 
@@ -149,6 +150,10 @@ class LSTMForecasterTests(unittest.TestCase):
         pass
 
     def test_generate_forecast(self):
-        # lstm_fcr = LSTMForecaster()
-        # print(lstm_fcr.generate_forecast('GME', '2022-08-15 15:30:00-04:00', 360, 60))
-        pass
+        start_time = datetime.now()
+        lstm_fcr = LSTMForecaster()
+        lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:30:00-04:00', 360, 60)
+        lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:31:00-04:00', 360, 60)
+        lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360, 60)
+        end_time = datetime.now()
+        print(end_time - start_time)

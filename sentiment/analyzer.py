@@ -34,8 +34,7 @@ class RedditAnalyzer:
         words = self.tokenizer.word_tokenize(text)
         pattern = re.compile('^\\$[A-Z]+(\\^[A-Z])?$')
         tickers = [word for word in words if pattern.match(word)]
-        return [ticker for ticker in tickers
-                if self.stock_tickers.loc[self.stock_tickers['Symbol'] == ticker].size > 0]
+        return [ticker for ticker in tickers if self.stock_tickers.loc[self.stock_tickers['Symbol'] == ticker].size > 0]
 
     def raw_score(self, text):
         sentences = self.tokenizer.sent_tokenize(text)
@@ -69,8 +68,7 @@ class RedditAnalyzer:
             return text
 
     def extract_post_scores(self, filenames):
-        scores = [(lambda p: int(self.cached_read_file(p).split('\n\n\n')[2]))(p)
-                  for p in filenames]
+        scores = [(lambda p: int(self.cached_read_file(p).split('\n\n\n')[2]))(p) for p in filenames]
         return numpy.array(scores)
 
     def train_score_scaler(self, posts_df):
@@ -86,7 +84,7 @@ class RedditAnalyzer:
             tickers = self.parse_tickers(title)
         elif post_type == 'COMMENT':
             submission_filename = file[1]
-            submission_sentiment = self.process_post(submission_filename)
+            submission_sentiment = self.cached_process_post(submission_filename)
             tickers = submission_sentiment.tickers
         else:
             # malformed file contents; skip
