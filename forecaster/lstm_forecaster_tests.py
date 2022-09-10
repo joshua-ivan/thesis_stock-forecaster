@@ -146,7 +146,7 @@ class LSTMForecasterTests(unittest.TestCase):
 
     def test_evaluate_model(self):
         # lstm_fcr = LSTMForecaster()
-        # lstm_fcr.evaluate_model('GME', '2022-08-15 15:29:00-04:00', 360, '2022-08-15 15:59:00-04:00', 30, 60)
+        # lstm_fcr.evaluate_model('BBBY', '2022-09-07 15:29:00-04:00', 360, '2022-09-07 15:59:00-04:00', 30, 60)
         pass
 
     def test_generate_forecast(self):
@@ -157,3 +157,4 @@ class LSTMForecasterTests(unittest.TestCase):
         lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360, 60)
         end_time = datetime.now()
         print(end_time - start_time)
+        pass

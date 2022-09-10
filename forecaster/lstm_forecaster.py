@@ -60,7 +60,7 @@ class LSTMForecaster:
         return model
 
     def fit_model(self, model, model_file_path, training_set):
-        model.fit(training_set.feature_set, training_set.labels, epochs=100, batch_size=32)
+        model.fit(training_set.feature_set, training_set.labels, epochs=10, batch_size=256)
         model.save(model_file_path)
         return model
 
