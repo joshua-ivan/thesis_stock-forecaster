@@ -47,7 +47,7 @@ class MachineInvestorTests(unittest.TestCase):
             mi.close_position(raw_profit, 0)
             self.assertEqual(mi.portfolio_value, expected_values[i])
 
-    # def test_new_open_position(self):
+    def test_new_open_position(self):
         mi = MachineInvestor(start_date='2022-08-22', end_date='2022-08-23')
         mi.new_open_position('MOCK', sentiment=-1, forecast=1, price=5, position_datetime='2022-08-23 09:30:00-04:00')
         mi.new_open_position('MOCK', sentiment=0, forecast=1, price=5, position_datetime='2022-08-23 09:31:00-04:00')
@@ -68,5 +68,4 @@ class MachineInvestorTests(unittest.TestCase):
 
     def test_run_simulation(self):
         mi = MachineInvestor(start_date='2022-09-07', end_date='2022-09-08')
-        # mi.run_simulation()
-        pass
+        mi.run_simulation()
