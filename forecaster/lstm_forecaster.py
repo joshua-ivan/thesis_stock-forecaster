@@ -19,6 +19,7 @@ class LSTMForecaster:
 
     def __init__(self):
         self.scaler = MinMaxScaler(feature_range=(0, 1))
+        self.model_memo = {}
 
     def load_stock_prices(self, stock_file_path, timestamp, num_prices):
         raw_prices = pandas.read_csv(stock_file_path)
@@ -42,26 +43,22 @@ class LSTMForecaster:
         labels = numpy.array(labels)
         return LSTMForecaster.TrainingSet(feature_set, labels)
 
-    def compile_model(self, isdir, load_model, model_builder, model_file_path, feature_set):
-        if isdir(model_file_path):
-            model = load_model(model_file_path)
-        else:
-            model = model_builder()
-            model.add(LSTM(units=50, return_sequences=True, input_shape=(feature_set.shape[1], 1)))
-            model.add(Dropout(0.2))
-            model.add(LSTM(units=50, return_sequences=True))
-            model.add(Dropout(0.2))
-            model.add(LSTM(units=50, return_sequences=True))
-            model.add(Dropout(0.2))
-            model.add(LSTM(units=50))
-            model.add(Dropout(0.2))
-            model.add(Dense(units=1))
-            model.compile(optimizer='adam', loss='mean_squared_error')
+    def compile_model(self, model_builder, feature_set):
+        model = model_builder()
+        model.add(LSTM(units=50, return_sequences=True, input_shape=(feature_set.shape[1], 1)))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50, return_sequences=True))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50, return_sequences=True))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50))
+        model.add(Dropout(0.2))
+        model.add(Dense(units=1))
+        model.compile(optimizer='adam', loss='mean_squared_error')
         return model
 
-    def fit_model(self, model, model_file_path, training_set):
-        model.fit(training_set.feature_set, training_set.labels, epochs=10, batch_size=256)
-        model.save(model_file_path)
+    def fit_model(self, model, training_set):
+        model.fit(training_set.feature_set, training_set.labels, epochs=100, batch_size=32)
         return model
 
     def generate_test_set(self, training_data, test_data, cluster_size):
@@ -70,7 +67,7 @@ class LSTMForecaster:
         test_inputs = test_inputs.reshape(-1, 1)
         test_inputs = self.scaler.transform(test_inputs)
         test_set = []
-        if len(test_data) is 0:
+        if len(test_data) == 0:
             test_set.append(test_inputs)
         else:
             for i in range(cluster_size, (len(test_data) + cluster_size)):
@@ -105,9 +102,8 @@ class LSTMForecaster:
         training_data = self.load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv',
                                                training_timestamp, training_size)
         training_set = self.generate_training_set(training_data, cluster_size)
-        stock_model = self.compile_model(builtin_isdir, keras_load_model, KerasSequential,
-                                         f'{base_data_dir}/models/{ticker}', training_set.feature_set)
-        stock_model = self.fit_model(stock_model, f'{base_data_dir}/models/{ticker}', training_set)
+        stock_model = self.compile_model(KerasSequential, training_set.feature_set)
+        stock_model = self.fit_model(stock_model, training_set)
 
         test_data = self.load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv',
                                            test_timestamp, test_size)
@@ -119,9 +115,12 @@ class LSTMForecaster:
         training_data = self.load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv',
                                                training_timestamp, training_size)
         training_set = self.generate_training_set(training_data, cluster_size)
-        stock_model = self.compile_model(builtin_isdir, keras_load_model, KerasSequential,
-                                         f'{base_data_dir}/models/{ticker}', training_set.feature_set)
-        stock_model = self.fit_model(stock_model, f'{base_data_dir}/models/{ticker}', training_set)
+
+        stock_model = self.model_memo.get(ticker)
+        if stock_model is None:
+            stock_model = self.compile_model(KerasSequential, training_set.feature_set)
+        stock_model = self.fit_model(stock_model, training_set)
+        self.model_memo[ticker] = stock_model
 
         test_set = self.generate_test_set(training_data, numpy.array([]), cluster_size)
         return (self.prod_prediction(stock_model, test_set) - training_data[-1]) / training_data[-1]

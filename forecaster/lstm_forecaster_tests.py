@@ -46,34 +46,6 @@ class LSTMForecasterTests(unittest.TestCase):
             self.assertTrue(numpy.allclose(expected_feature_set[i], training_set.feature_set[i]))
         self.assertTrue(numpy.allclose(expected_labels, training_set.labels))
 
-    def test_compile_model(self):
-        lstm_fcr = LSTMForecaster()
-        training_data = lstm_fcr.load_stock_prices('mock_data/forecaster/GME.csv', '2022-08-16 11:30:00-04:00', 5)
-        training_set = lstm_fcr.generate_training_set(training_data, 2)
-        mock_isdir = Mock()
-        mock_load_model = Mock()
-        mock_model_builder = Mock()
-        mock_file_path = 'mock/path'
-
-        mock_isdir.return_value = False
-        lstm_fcr.compile_model(
-            mock_isdir, mock_load_model, mock_model_builder, mock_file_path, training_set.feature_set)
-        mock_load_model.assert_not_called()
-
-        mock_isdir.return_value = True
-        lstm_fcr.compile_model(
-            mock_isdir, mock_load_model, mock_model_builder, mock_file_path, training_set.feature_set)
-        mock_load_model.assert_called_with(mock_file_path)
-
-    def test_fit_model(self):
-        lstm_fcr = LSTMForecaster()
-        mock_model = Mock()
-        mock_model.save = Mock()
-        mock_file_path = 'mock/path'
-        mock_data = Mock()
-        lstm_fcr.fit_model(mock_model, mock_file_path, mock_data)
-        mock_model.save.assert_called_with(mock_file_path)
-
     def test_generate_test_set(self):
         lstm_fcr = LSTMForecaster()
         training_data = lstm_fcr.load_stock_prices('mock_data/forecaster/GME.csv', '2022-08-16 11:27:00-04:00', 7)
@@ -145,16 +117,16 @@ class LSTMForecasterTests(unittest.TestCase):
         mock_pyplot.savefig.assert_called_with(f'{mock_path}/{mock_ticker}.png')
 
     def test_evaluate_model(self):
-        # lstm_fcr = LSTMForecaster()
-        # lstm_fcr.evaluate_model('BBBY', '2022-09-07 15:29:00-04:00', 360, '2022-09-07 15:59:00-04:00', 30, 60)
+        lstm_fcr = LSTMForecaster()
+        lstm_fcr.evaluate_model('BBBY', '2022-09-07 15:29:00-04:00', 360, '2022-09-07 15:59:00-04:00', 30, 60)
         pass
 
     def test_generate_forecast(self):
-        start_time = datetime.now()
-        lstm_fcr = LSTMForecaster()
-        lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:30:00-04:00', 360, 60)
-        lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:31:00-04:00', 360, 60)
-        lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360, 60)
-        end_time = datetime.now()
-        print(end_time - start_time)
+        # start_time = datetime.now()
+        # lstm_fcr = LSTMForecaster()
+        # lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:30:00-04:00', 360, 60)
+        # lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:31:00-04:00', 360, 60)
+        # lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360, 60)
+        # end_time = datetime.now()
+        # print(end_time - start_time)
         pass
