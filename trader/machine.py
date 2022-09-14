@@ -33,7 +33,7 @@ class MachineInvestor:
                 raw_profit = closing_value - opening_value
                 profit_percent = raw_profit / opening_value
 
-            if profit_percent > (2 * self.loss_threshold) or profit_percent < (-1 * self.loss_threshold):
+            if profit_percent > (1 * self.loss_threshold) or profit_percent < (-1 * self.loss_threshold):
                 self.close_position(raw_profit, i)
 
     def close_position(self, raw_profit, index):
