@@ -1,10 +1,8 @@
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential as KerasSequential
-from keras.models import load_model as keras_load_model
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers import Dropout
-from os.path import isdir as builtin_isdir
 import matplotlib.pyplot as pyplot
 import os as python_os
 import pandas
