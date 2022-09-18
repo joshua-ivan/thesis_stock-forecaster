@@ -33,3 +33,8 @@ class ARIMAGARCHForecaster:
             forecasts.append(self.predict(test_set[i]))
 
         plot_predictions(test_data, forecasts, 'BBBY')
+
+    def generate_forecast(self, ticker, training_timestamp, training_size):
+        base_data_dir = 'intermediate_data'
+        training_data = load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv', training_timestamp, training_size)
+        return (self.predict(training_data) - training_data[-1]) / training_data[-1]

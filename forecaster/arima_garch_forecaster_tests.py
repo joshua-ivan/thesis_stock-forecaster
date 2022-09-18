@@ -1,4 +1,5 @@
 from forecaster.arima_garch_forecaster import ARIMAGARCHForecaster
+from datetime import datetime
 import unittest
 import numpy
 
@@ -16,3 +17,12 @@ class ARIMAGARCHForecasterTests(unittest.TestCase):
         agf = ARIMAGARCHForecaster()
         agf.evaluate_model()
         pass
+
+    def test_generate_forecast(self):
+        start_time = datetime.now()
+        agf = ARIMAGARCHForecaster()
+        print(agf.generate_forecast('BBBY', '2022-09-07 09:30:00-04:00', 360))
+        print(agf.generate_forecast('BBBY', '2022-09-07 09:31:00-04:00', 360))
+        print(agf.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360))
+        end_time = datetime.now()
+        print(end_time - start_time)
