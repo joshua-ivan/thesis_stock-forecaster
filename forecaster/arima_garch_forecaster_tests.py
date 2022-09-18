@@ -13,6 +13,6 @@ class ARIMAGARCHForecasterTests(unittest.TestCase):
         numpy.testing.assert_array_equal(expected, agf.generate_test_set([1, 2, 3], [4, 5]))
 
     def test_evaluate_model(self):
-        # agf = ARIMAGARCHForecaster()
-        # agf.evaluate_model()
+        agf = ARIMAGARCHForecaster()
+        agf.evaluate_model()
         pass

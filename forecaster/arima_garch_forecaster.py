@@ -1,23 +1,11 @@
+from forecaster.utils import load_stock_prices, plot_predictions
 from pmdarima.model_selection import train_test_split
-from matplotlib import pyplot
 import pmdarima
 import arch
-import pandas
 import numpy
-import os
 
 
 class ARIMAGARCHForecaster:
-    def load_stock_prices(self, stock_file_path, timestamp, num_prices):
-        raw_prices = pandas.read_csv(stock_file_path)
-        try:
-            timestamp_index = raw_prices.index[raw_prices['Datetime'] == timestamp].tolist()[0] + 1
-        except IndexError:
-            return numpy.ndarray([])
-
-        clean_prices = raw_prices.iloc[(timestamp_index - num_prices):timestamp_index, 1:2].values
-        return numpy.ndarray.flatten(clean_prices)
-
     def generate_test_set(self, training_data, test_data):
         total = numpy.concatenate((training_data, test_data))
         test_set = []
@@ -36,7 +24,7 @@ class ARIMAGARCHForecaster:
         return predicted_mean - predicted_variance
 
     def evaluate_model(self):
-        prices = self.load_stock_prices('intermediate_data/prices/BBBY.csv', '2022-09-07 15:59:00-04:00', 390)
+        prices = load_stock_prices('intermediate_data/prices/BBBY.csv', '2022-09-07 15:59:00-04:00', 390)
         training_data, test_data = train_test_split(prices, train_size=360, test_size=30)
         test_set = self.generate_test_set(training_data, test_data)
 
@@ -44,14 +32,4 @@ class ARIMAGARCHForecaster:
         for i in range(0, len(test_set)):
             forecasts.append(self.predict(test_set[i]))
 
-        pyplot.figure(figsize=(10, 6))
-        pyplot.plot(test_data, color='blue', label=f'Actual BBBY')
-        pyplot.plot(forecasts, color='red', label=f'Predicted BBBY')
-        pyplot.title(f'BBBY Prediction')
-        pyplot.xlabel('Date')
-        pyplot.ylabel('Stock Price')
-        pyplot.legend()
-
-        if not os.path.isdir(f'intermediate_data/graphs'):
-            os.makedirs(f'intermediate_data/graphs')
-        pyplot.savefig(f'intermediate_data/graphs/BBBY.png')
+        plot_predictions(test_data, forecasts, 'BBBY')

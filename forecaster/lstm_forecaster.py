@@ -1,3 +1,4 @@
+from forecaster.utils import load_stock_prices, plot_predictions
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential as KerasSequential
 from keras.layers import Dense
@@ -18,16 +19,6 @@ class LSTMForecaster:
     def __init__(self):
         self.scaler = MinMaxScaler(feature_range=(0, 1))
         self.model_memo = {}
-
-    def load_stock_prices(self, stock_file_path, timestamp, num_prices):
-        raw_prices = pandas.read_csv(stock_file_path)
-        try:
-            timestamp_index = raw_prices.index[raw_prices['Datetime'] == timestamp].tolist()[0] + 1
-        except IndexError:
-            return numpy.ndarray([])
-
-        clean_prices = raw_prices.iloc[(timestamp_index - num_prices):timestamp_index, 1:2].values
-        return numpy.ndarray.flatten(clean_prices)
 
     def generate_training_set(self, training_data, cluster_size):
         scaled_training_data = self.scaler.fit_transform(training_data.reshape(-1, 1))
@@ -78,17 +69,7 @@ class LSTMForecaster:
         predictions = model.predict(test_set)
         predictions = self.scaler.inverse_transform(predictions)
 
-        plotter.figure(figsize=(10, 6))
-        plotter.plot(test_data, color='blue', label=f'Actual {ticker}')
-        plotter.plot(predictions, color='red', label=f'Predicted {ticker}')
-        plotter.title(f'{ticker} Prediction')
-        plotter.xlabel('Date')
-        plotter.ylabel('Stock Price')
-        plotter.legend()
-
-        if not os.path.isdir(graph_dir):
-            os.makedirs(graph_dir)
-        plotter.savefig(f'{graph_dir}/{ticker}.png')
+        plot_predictions(test_data, predictions, ticker)
 
     def prod_prediction(self, model, test_set):
         prediction = model.predict(test_set)
@@ -97,21 +78,18 @@ class LSTMForecaster:
 
     def evaluate_model(self, ticker, training_timestamp, training_size, test_timestamp, test_size, cluster_size):
         base_data_dir = 'intermediate_data'
-        training_data = self.load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv',
-                                               training_timestamp, training_size)
+        training_data = load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv', training_timestamp, training_size)
         training_set = self.generate_training_set(training_data, cluster_size)
         stock_model = self.compile_model(KerasSequential, training_set.feature_set)
         stock_model = self.fit_model(stock_model, training_set)
 
-        test_data = self.load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv',
-                                           test_timestamp, test_size)
+        test_data = load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv', test_timestamp, test_size)
         test_set = self.generate_test_set(training_data, test_data, cluster_size)
         self.test_predictions(stock_model, test_set, test_data, pyplot, python_os, f'{base_data_dir}/graphs', ticker)
 
     def generate_forecast(self, ticker, training_timestamp, training_size, cluster_size):
         base_data_dir = 'intermediate_data'
-        training_data = self.load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv',
-                                               training_timestamp, training_size)
+        training_data = load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv', training_timestamp, training_size)
         training_set = self.generate_training_set(training_data, cluster_size)
 
         stock_model = self.model_memo.get(ticker)
