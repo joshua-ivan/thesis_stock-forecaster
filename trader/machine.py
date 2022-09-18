@@ -1,4 +1,5 @@
 from sentiment.analyzer import RedditAnalyzer
+from forecaster.arima_garch_forecaster import ARIMAGARCHForecaster
 from forecaster.lstm_forecaster import LSTMForecaster
 from trader.price_fetcher import PriceFetcher
 from trader.position import Position
@@ -7,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 
 
 class MachineInvestor:
-    def __init__(self, start_date, end_date, pf=PriceFetcher(), ra=RedditAnalyzer(), lstm_fc=LSTMForecaster()):
+    def __init__(self, start_date, end_date, pf=PriceFetcher(), ra=RedditAnalyzer(), fc=ARIMAGARCHForecaster()):
         self.open_positions = []
         self.portfolio_value = 0.0
         self.loss_threshold = 0.01
@@ -15,7 +16,7 @@ class MachineInvestor:
         self.end_date = end_date
         self.price_fetcher = pf
         self.reddit_analyzer = ra
-        self.lstm_forecaster = lstm_fc
+        self.forecaster = fc
 
     def check_open_positions(self, closing_datetime):
         for i in range(len(self.open_positions) - 1, -1, -1):
@@ -50,7 +51,7 @@ class MachineInvestor:
         return self.price_fetcher.get_price(ticker, position_datetime, input_dates[0], input_dates[1])
 
     def get_forecast(self, ticker, position_datetime):
-        return self.lstm_forecaster.generate_forecast(ticker, position_datetime, 360, 60)
+        return self.forecaster.generate_forecast(ticker, position_datetime, 360)
 
     def new_open_position(self, ticker, sentiment, price, forecast, position_datetime):
         min_cash_to_spend = 10000.00
