@@ -8,7 +8,7 @@ class FrequencyAnalyzerTests(unittest.TestCase):
         fa = FrequencyAnalyzer()
         base_dir = 'mock_data/sentiment/frequency'
         words = fa.process_posts(base_dir, os.listdir(base_dir))
-        expected = {'comment': 2, 'caps': 1, 'submission': 1}
+        expected = {'comment': 4, 'caps': 1, 'submission': 1, 'downvote': 1}
         self.assertEqual(expected, words)
 
     def test_merge_frequency_dicts(self):
@@ -45,4 +45,4 @@ class FrequencyAnalyzerTests(unittest.TestCase):
 
     def test_extract_word_frequency(self):
         fa = FrequencyAnalyzer()
-        fa.extract_word_frequency()
+        # fa.extract_word_frequency()

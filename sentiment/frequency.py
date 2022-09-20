@@ -1,4 +1,4 @@
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer, VaderConstants
 from nltk.corpus import stopwords
 from sentiment.tokenizer import TickerTokenizer
 from utilities import file_io
@@ -25,7 +25,7 @@ class FrequencyAnalyzer:
                     continue
 
                 lower = word.lower()
-                if lower in self.stopwords:
+                if lower in self.stopwords or lower in VaderConstants.BOOSTER_DICT or lower in VaderConstants.NEGATE:
                     continue
 
                 if self.sia.lexicon.get(lower) is None:
