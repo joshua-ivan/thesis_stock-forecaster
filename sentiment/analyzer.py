@@ -3,6 +3,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from sentiment.post_sentiment import PostSentiment
 from sentiment.tokenizer import TickerTokenizer
 from sentiment.scaler import ScoreScaler
+from sentiment.lexicon import wsb_lexicon
 from utilities import file_io
 from itertools import chain
 from collections import Counter
@@ -13,8 +14,9 @@ import os
 
 
 class RedditAnalyzer:
-    def __init__(self):
+    def __init__(self, lex=wsb_lexicon):
         self.sid = SentimentIntensityAnalyzer()
+        self.update_lexicon(lex)
         self.stock_tickers = pandas.read_csv('intermediate_data/tickers.csv')
         self.tokenizer = TickerTokenizer(self.stock_tickers['Symbol'])
         self.scaler = ScoreScaler()
@@ -35,6 +37,9 @@ class RedditAnalyzer:
         pattern = re.compile('^\\$[A-Z]+(\\^[A-Z])?$')
         tickers = [word for word in words if pattern.match(word)]
         return [ticker for ticker in tickers if self.stock_tickers.loc[self.stock_tickers['Symbol'] == ticker].size > 0]
+
+    def update_lexicon(self, lex):
+        self.sid.lexicon.update(lex)
 
     def raw_score(self, text):
         sentences = self.tokenizer.sent_tokenize(text)

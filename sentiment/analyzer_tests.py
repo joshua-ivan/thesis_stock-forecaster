@@ -191,24 +191,32 @@ class RedditScraperTests(unittest.TestCase):
         actual = ra.extract_frequency(post_sentiments)
         pandas.testing.assert_series_equal(expected, actual)
 
-    def test_extract_sentiment(self):
-        start_time = datetime.now()
+    def test_updated_lexicon(self):
         ra = RedditAnalyzer()
-        hottest_stock = ra.extract_sentiment(
-            int(datetime(2022, 9, 7, 12, 30, 0).timestamp()),
-            int(datetime(2022, 9, 7, 13, 30, 0).timestamp())
-        )
-        hottest_stock = ra.extract_sentiment(
-            int(datetime(2022, 9, 7, 12, 31, 0).timestamp()),
-            int(datetime(2022, 9, 7, 13, 31, 0).timestamp())
-        )
-        hottest_stock = ra.extract_sentiment(
-            int(datetime(2022, 9, 7, 12, 32, 0).timestamp()),
-            int(datetime(2022, 9, 7, 13, 32, 0).timestamp())
-        )
-        end_time = datetime.now()
-        print(end_time - start_time)
+        self.assertEqual(ra.sid.lexicon.get('crazy'), -1.4)
+        ra.update_lexicon(lex={'mockymock': 4})
+        self.assertEqual(ra.sid.lexicon.get('mockymock'), 4)
+        self.assertEqual(ra.sid.lexicon.get('testtest'), None)
+
+    def test_extract_sentiment(self):
+        # start_time = datetime.now()
+        # ra = RedditAnalyzer()
+        # hottest_stock = ra.extract_sentiment(
+        #     int(datetime(2022, 9, 7, 12, 30, 0).timestamp()),
+        #     int(datetime(2022, 9, 7, 13, 30, 0).timestamp())
+        # )
+        # hottest_stock = ra.extract_sentiment(
+        #     int(datetime(2022, 9, 7, 12, 31, 0).timestamp()),
+        #     int(datetime(2022, 9, 7, 13, 31, 0).timestamp())
+        # )
+        # hottest_stock = ra.extract_sentiment(
+        #     int(datetime(2022, 9, 7, 12, 32, 0).timestamp()),
+        #     int(datetime(2022, 9, 7, 13, 32, 0).timestamp())
+        # )
+        # end_time = datetime.now()
+        # print(end_time - start_time)
         # print(hottest_stock)
+        pass
 
     def test_twenty_four_hour_freqency(self):
         # ra = RedditAnalyzer()
