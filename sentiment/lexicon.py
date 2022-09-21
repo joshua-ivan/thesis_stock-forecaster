@@ -45,7 +45,7 @@ wsb_lexicon = {
     'delusional': -1,
     'rug': -2,
     'bubble': -1,
-    'lambo': 1,
+    'lambo': 2,
     'tendies': 1,
     'clown': -1
 }
