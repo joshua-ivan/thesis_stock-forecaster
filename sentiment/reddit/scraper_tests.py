@@ -223,6 +223,12 @@ class RedditScraperTests(unittest.TestCase):
         scraper.eager_load_comments(mock_submission)
         self.assertEqual(mock_submission.comments.replace_more.call_count, 3)
 
+    def test_scrape_subreddit(self):
+        scraper = RedditScraper('US/Pacific')
+        start_date = int(datetime(2022, 8, 1, 4, 0, 0).timestamp())
+        end_date = int(datetime(2022, 9, 1, 4, 0, 0).timestamp())
+        scraper.scrape_daterange_subreddit_content(start_date, end_date, file_io)
+
     def test_run_recent_scraper(self):
         scraper = RedditScraper('US/Pacific')
         # scraper.scrape_recent_subreddit_content('', file_io)
