@@ -1,4 +1,4 @@
-from pushshift_py import PushshiftAPI
+from pmaw import PushshiftAPI
 from prawcore import Requestor
 import config
 import praw
@@ -13,18 +13,13 @@ class JSONDebugRequestor(Requestor):
 
 
 class RedditAPI:
-    def __init__(self):
+    def __init__(self, ps=PushshiftAPI):
         self.reddit = praw.Reddit(requestor_class=JSONDebugRequestor) if config.debug_responses else praw.Reddit()
-        self.pushshift = PushshiftAPI()
+        self.pushshift = ps()
 
     def submission_ids(self, start_date, end_date):
-        generator = self.pushshift.search_submissions(
-            subreddit='wallstreetbets', after=start_date, before=end_date, filter=['id'])
-
-        submission_ids = []
-        for request in generator:
-            submission_ids.append(request)
-        return list(set([(lambda sub: sub.id)(sub) for sub in submission_ids]))
+        submissions = self.pushshift.search_submissions(subreddit='wallstreetbets', after=start_date, before=end_date)
+        return [(lambda sub: sub['id'])(sub) for sub in submissions]
 
     def get_submission(self, submission_id):
         return self.reddit.submission(id=submission_id)
