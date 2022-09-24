@@ -42,6 +42,7 @@ class RedditScraper:
     def write_submission(self, submission, io):
         submission_filename = f'{submission.created_utc} - {submission.fullname}'
         submission_contents = f'SUBMISSION\n\n\n{submission.title}\n\n\n{submission.score}\n\n\n{submission.selftext}'
+        print(submission_filename)
         io.write_file(f'intermediate_data/posts/', submission_filename, submission_contents)
         return submission
 
@@ -55,6 +56,7 @@ class RedditScraper:
             comment_filename = f'{comment.created_utc} - {comment.id}'
             comment_contents = \
                 f'COMMENT\n\n\n{submission_filename}\n\n\n{comment.score}\n\n\n{comment.body}'
+            print(comment_filename)
             io.write_file(f'intermediate_data/posts/', comment_filename, comment_contents)
 
     def eager_load_comments(self, submission):

@@ -1,3 +1,4 @@
+from multiprocess.pool import Pool
 from unittest.mock import Mock, patch, call
 from sentiment.reddit.api import RedditAPI
 from sentiment.reddit.scraper import RedditScraper
@@ -224,10 +225,37 @@ class RedditScraperTests(unittest.TestCase):
         self.assertEqual(mock_submission.comments.replace_more.call_count, 3)
 
     def test_scrape_subreddit(self):
-        scraper = RedditScraper('US/Pacific')
-        start_date = int(datetime(2022, 8, 1, 4, 0, 0).timestamp())
-        end_date = int(datetime(2022, 9, 1, 4, 0, 0).timestamp())
-        scraper.scrape_daterange_subreddit_content(start_date, end_date, file_io)
+        def process(date_range):
+            proc_scraper = RedditScraper('US/Pacific')
+            proc_scraper.scrape_daterange_subreddit_content(date_range['start_date'], date_range['end_date'], file_io)
+            return 0
+
+        bounds = [
+            {
+                'start_date': int(datetime(2022, 8, 1, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 8, 9, 4, 0, 0).timestamp())
+            },
+            {
+                'start_date': int(datetime(2022, 8, 9, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 8, 17, 4, 0, 0).timestamp())
+            },
+            {
+                'start_date': int(datetime(2022, 8, 17, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 8, 25, 4, 0, 0).timestamp())
+            },
+            {
+                'start_date': int(datetime(2022, 8, 25, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 9, 1, 4, 0, 0).timestamp())
+            }
+        ]
+
+        process_pool = Pool(4)
+        result = process_pool.map_async(thread, bounds)
+        result = result.get()
+        process_pool.close()
+        for res in result:
+            if res != 0:
+                print('something broke')
 
     def test_run_recent_scraper(self):
         scraper = RedditScraper('US/Pacific')
