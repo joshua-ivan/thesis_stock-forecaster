@@ -68,4 +68,4 @@ class MachineInvestorTests(unittest.TestCase):
 
     def test_run_simulation(self):
         mi = MachineInvestor(start_date='2022-09-07', end_date='2022-09-08')
-        mi.run_simulation()
+        # mi.run_simulation()

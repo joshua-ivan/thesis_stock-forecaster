@@ -80,8 +80,7 @@ class LSTMForecasterTests(unittest.TestCase):
 
     def test_evaluate_model(self):
         lstm_fcr = LSTMForecaster()
-        lstm_fcr.evaluate_model('BBBY', '2022-09-07 15:29:00-04:00', 360, '2022-09-07 15:59:00-04:00', 30, 60)
-        pass
+        # lstm_fcr.evaluate_model('BBBY', '2022-09-07 15:29:00-04:00', 360, '2022-09-07 15:59:00-04:00', 30, 60)
 
     def test_generate_forecast(self):
         # start_time = datetime.now()

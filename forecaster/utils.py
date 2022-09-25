@@ -4,7 +4,7 @@ import numpy
 import os
 
 
-default_graph_dir = 'intermediate_data/graphs'
+default_graph_dir = '../forecaster_data/graphs'
 
 
 def load_stock_prices(stock_file_path, timestamp, num_prices):

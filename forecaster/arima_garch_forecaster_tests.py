@@ -15,14 +15,13 @@ class ARIMAGARCHForecasterTests(unittest.TestCase):
 
     def test_evaluate_model(self):
         agf = ARIMAGARCHForecaster()
-        agf.evaluate_model()
-        pass
+        # agf.evaluate_model()
 
     def test_generate_forecast(self):
-        start_time = datetime.now()
+        # start_time = datetime.now()
         agf = ARIMAGARCHForecaster()
-        print(agf.generate_forecast('BBBY', '2022-09-07 09:30:00-04:00', 360))
-        print(agf.generate_forecast('BBBY', '2022-09-07 09:31:00-04:00', 360))
-        print(agf.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360))
-        end_time = datetime.now()
-        print(end_time - start_time)
+        # print(agf.generate_forecast('BBBY', '2022-09-07 09:30:00-04:00', 360))
+        # print(agf.generate_forecast('BBBY', '2022-09-07 09:31:00-04:00', 360))
+        # print(agf.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360))
+        # end_time = datetime.now()
+        # print(end_time - start_time)

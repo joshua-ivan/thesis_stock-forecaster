@@ -5,7 +5,7 @@ import pandas
 import random
 
 
-default_ticker_csv = 'intermediate_data/tickers.csv'
+default_ticker_csv = '../forecaster_data/tickers.csv'
 
 
 class DartboardInvestor:

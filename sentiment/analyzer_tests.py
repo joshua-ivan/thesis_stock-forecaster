@@ -118,9 +118,9 @@ class RedditScraperTests(unittest.TestCase):
 
         scaler_values = [1, 2, -2]
         expected_values = [
-            [-0.1965, -0.3612],
-            [-0.393, -0.7224],
-            [0.393, 0.7224]
+            [0.1444, -0.57],
+            [0.2888, -1.14],
+            [-0.2888, 1.14]
         ]
 
         for i in range(0, len(scaler_values)):
@@ -130,14 +130,14 @@ class RedditScraperTests(unittest.TestCase):
             expected_comment_sentiment = PostSentiment(comment_filename, ['$GCT'], expected_values[i][0])
             self.assertEqual(comment_sentiment.filename, expected_comment_sentiment.filename)
             self.assertEqual(comment_sentiment.tickers, expected_comment_sentiment.tickers)
-            self.assertEqual(comment_sentiment.sentiment, expected_comment_sentiment.sentiment)
+            numpy.testing.assert_almost_equal(comment_sentiment.sentiment, expected_comment_sentiment.sentiment)
 
             submission_filename = '1660970721.0 - t3_wsygps'
             submission_sentiment = ra.process_post(submission_filename)
             expected_submission_sentiment = PostSentiment(submission_filename, ['$GCT'], expected_values[i][1])
             self.assertEqual(submission_sentiment.filename, expected_submission_sentiment.filename)
             self.assertEqual(submission_sentiment.tickers, expected_submission_sentiment.tickers)
-            self.assertEqual(submission_sentiment.sentiment, expected_submission_sentiment.sentiment)
+            numpy.testing.assert_almost_equal(submission_sentiment.sentiment, expected_submission_sentiment.sentiment)
 
     def test_cached_file_io(self):
         ra = RedditAnalyzer()

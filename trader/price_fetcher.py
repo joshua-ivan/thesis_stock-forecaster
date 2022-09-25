@@ -3,7 +3,7 @@ import pandas
 import os
 
 
-default_stock_dir = 'intermediate_data/prices'
+default_stock_dir = '../forecaster_data/prices'
 
 
 class PriceFetcher:

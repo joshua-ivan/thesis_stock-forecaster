@@ -207,8 +207,8 @@ class RedditScraperTests(unittest.TestCase):
         scraper.scrape_comments(mock_submission, mock_io)
         mock_submission.comments.replace_more.assert_called_once()
         mock_io.write_file.assert_has_calls([
-            call('intermediate_data/posts/', '555 - bar', 'COMMENT\n\n\n500 - foo\n\n\n100\n\n\nMOCK'),
-            call('intermediate_data/posts/', '556 - baz', 'COMMENT\n\n\n500 - foo\n\n\n101\n\n\nMOCK')
+            call('../forecaster_data/posts/', '555 - bar', 'COMMENT\n\n\n500 - foo\n\n\n100\n\n\nMOCK'),
+            call('../forecaster_data/posts/', '556 - baz', 'COMMENT\n\n\n500 - foo\n\n\n101\n\n\nMOCK')
         ])
 
     def test_eager_load_comments(self):
@@ -249,13 +249,13 @@ class RedditScraperTests(unittest.TestCase):
             }
         ]
 
-        process_pool = Pool(4)
-        result = process_pool.map_async(thread, bounds)
-        result = result.get()
-        process_pool.close()
-        for res in result:
-            if res != 0:
-                print('something broke')
+        # process_pool = Pool(4)
+        # result = process_pool.map_async(process, bounds)
+        # result = result.get()
+        # process_pool.close()
+        # for res in result:
+        #     if res != 0:
+        #         print('something broke')
 
     def test_run_recent_scraper(self):
         scraper = RedditScraper('US/Pacific')

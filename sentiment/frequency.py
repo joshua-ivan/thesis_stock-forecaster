@@ -10,7 +10,7 @@ import os
 class FrequencyAnalyzer:
     def __init__(self):
         self.sia = SentimentIntensityAnalyzer()
-        self.stock_tickers = pandas.read_csv('intermediate_data/tickers.csv')
+        self.stock_tickers = pandas.read_csv('../forecaster_data/tickers.csv')
         self.tokenizer = TickerTokenizer(self.stock_tickers['Symbol'])
         self.stopwords = stopwords.words('english')
         self.file_io = file_io
@@ -56,7 +56,7 @@ class FrequencyAnalyzer:
         return sublists
 
     def extract_word_frequency(self):
-        base_dir = 'intermediate_data/posts'
+        base_dir = '../forecaster_data/posts'
         cpu_count = os.cpu_count()
         post_lists = self.split_post_list(os.listdir(base_dir), cpu_count)
 
@@ -69,4 +69,4 @@ class FrequencyAnalyzer:
 
         unlisted_df = pandas.DataFrame.from_dict(unlisted_words, orient='index', columns=['count'])
         unlisted_df.sort_values(by='count', ascending=False, inplace=True)
-        unlisted_df.to_csv('intermediate_data/unlisted_words.csv')
+        unlisted_df.to_csv('../forecaster_data/unlisted_words.csv')

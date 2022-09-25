@@ -42,7 +42,7 @@ class PriceFetcherTests(unittest.TestCase):
 
         mock_os.path.exists.return_value = False
         start_date, end_date = '2022-08-15', '2022-08-16'
-        filename = 'intermediate_data/prices/MOCK.csv'
+        filename = '../forecaster_data/prices/MOCK.csv'
         pf.get_stock_history('MOCK', start_date, end_date)
         mock_ticker.history.assert_called_with(start=start_date, end=end_date, period='1d', interval='1m')
         mock_pandas.read_csv.assert_not_called()
@@ -61,7 +61,7 @@ class PriceFetcherTests(unittest.TestCase):
         mock_ticker.history.assert_called_with(start=start_date, end=end_date, period='1d', interval='1m')
         mock_pandas.read_csv.assert_called_with(filename, index_col=0, parse_dates=True)
         pf.merge_stock_data.assert_called_with(mock_history, mock_df)
-        merge_df.to_csv.assert_called_with('intermediate_data/prices/MOCK.csv')
+        merge_df.to_csv.assert_called_with('../forecaster_data/prices/MOCK.csv')
 
     def test_merge_stock_data(self):
         test_cases = ['all_difference', 'no_difference', 'more_old_than_new', 'more_new_than_old']

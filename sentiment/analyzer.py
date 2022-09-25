@@ -17,12 +17,12 @@ class RedditAnalyzer:
     def __init__(self, lex=wsb_lexicon):
         self.sid = SentimentIntensityAnalyzer()
         self.update_lexicon(lex)
-        self.stock_tickers = pandas.read_csv('intermediate_data/tickers.csv')
+        self.stock_tickers = pandas.read_csv('../forecaster_data/tickers.csv')
         self.tokenizer = TickerTokenizer(self.stock_tickers['Symbol'])
         self.scaler = ScoreScaler()
         self.os = os
 
-        self.all_posts_dir = 'intermediate_data/posts'
+        self.all_posts_dir = '../forecaster_data/posts'
         self.all_posts_df = self.build_posts_dataframe()
 
         self.sentiment_memo = pandas.DataFrame(columns=['timestamp', 'filename', 'sentiment'])
