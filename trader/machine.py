@@ -4,11 +4,12 @@ from forecaster.lstm_forecaster import LSTMForecaster
 from trader.price_fetcher import PriceFetcher
 from trader.position import Position
 from utilities.date_util import datetime_string_to_posix, datetime_string_to_yfinance_dates
+from utilities.file_io import write_file
 from datetime import datetime, timezone, timedelta
 
 
 class MachineInvestor:
-    def __init__(self, start_date, end_date, pf=PriceFetcher(), ra=RedditAnalyzer(), fc=ARIMAGARCHForecaster()):
+    def __init__(self, start_date, end_date, pf=PriceFetcher(), ra=RedditAnalyzer(), fc=LSTMForecaster()):
         self.open_positions = []
         self.portfolio_value = 0.0
         self.loss_threshold = 0.01
@@ -17,6 +18,7 @@ class MachineInvestor:
         self.price_fetcher = pf
         self.reddit_analyzer = ra
         self.forecaster = fc
+        self.log = []
 
     def check_open_positions(self, closing_datetime):
         for i in range(len(self.open_positions) - 1, -1, -1):
@@ -40,18 +42,21 @@ class MachineInvestor:
     def close_position(self, raw_profit, index):
         self.portfolio_value += raw_profit
         position = self.open_positions.pop(index)
-        print(f'Closed position: {position}\nPortfolio value: {self.portfolio_value}')
+
+        log_str = f'Closed position: {position}\nPortfolio value: {self.portfolio_value}'
+        self.log.append(log_str)
+        print(log_str)
 
     def get_sentiment(self, position_datetime):
         posix_timestamp = datetime_string_to_posix(position_datetime)
-        return self.reddit_analyzer.extract_sentiment(int(posix_timestamp - (60 * 60)), int(posix_timestamp))
+        return self.reddit_analyzer.extract_sentiment(int(posix_timestamp - (60 * 60 * 5)), int(posix_timestamp))
 
     def get_price(self, ticker, position_datetime):
         input_dates = datetime_string_to_yfinance_dates(position_datetime)
         return self.price_fetcher.get_price(ticker, position_datetime, input_dates[0], input_dates[1])
 
     def get_forecast(self, ticker, position_datetime):
-        return self.forecaster.generate_forecast(ticker, position_datetime, 360)
+        return self.forecaster.generate_forecast(ticker, position_datetime, 360, 60)
 
     def new_open_position(self, ticker, sentiment, price, forecast, position_datetime):
         min_cash_to_spend = 10000.00
@@ -64,9 +69,11 @@ class MachineInvestor:
 
         if position is not None:
             self.open_positions.append(position)
-            print(f'New position: {position}')
+            log_str = f'New position: {position}'
         else:
-            print(f'No new position on {position_datetime}')
+            log_str = f'No new position on {position_datetime}'
+        self.log.append(log_str)
+        print(log_str)
 
     def run_simulation(self):
         start_datetime = datetime.strptime(self.start_date, '%Y-%m-%d')
@@ -84,7 +91,14 @@ class MachineInvestor:
             ticker = sentiment[0].replace('$', '')
             price = self.get_price(ticker, current_datetime_str)
             forecast = self.get_forecast(ticker, current_datetime_str)
-            print(f'sentiment: {sentiment} | price: {price} | forecast: {forecast}')
+            log_str = f'sentiment: {sentiment} | price: {price} | forecast: {forecast}'
+            self.log.append(log_str)
+            print(log_str)
 
             self.new_open_position(ticker, sentiment[1], price, forecast, current_datetime_str)
-            current_datetime = current_datetime + timedelta(minutes=1)
+
+            current_datetime = current_datetime + timedelta(minutes=5)
+            if current_datetime.hour >= 16:
+                current_datetime = current_datetime + timedelta(hours=17, minutes=30)
+
+        write_file('.', 'machine.log', ''.join([(lambda st: f'{st}\n')(st) for st in self.log]))

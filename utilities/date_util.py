@@ -63,6 +63,6 @@ def datetime_string_to_posix(datetime_string):
 
 def datetime_string_to_yfinance_dates(datetime_string):
     dt = datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S-04:00')
-    start_date = dt.replace(day=(dt.day - 1)).strftime('%Y-%m-%d')
+    start_date = dt.replace(day=(dt.day - 7)).strftime('%Y-%m-%d')
     end_date = dt.replace(day=(dt.day + 1)).strftime('%Y-%m-%d')
     return start_date, end_date

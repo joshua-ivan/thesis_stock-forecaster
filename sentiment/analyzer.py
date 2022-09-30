@@ -126,7 +126,7 @@ class RedditAnalyzer:
         return freq
 
     def extract_sentiment(self, start_time, end_time):
-        scaler_train_df = self.filter_dataframe(self.all_posts_df, (end_time - (24 * 60 * 60)), end_time)
+        scaler_train_df = self.filter_dataframe(self.all_posts_df, (end_time - (60 * 60 * 24 * 5)), end_time)
         self.train_score_scaler(scaler_train_df)
 
         self.sentiment_memo = self.filter_dataframe(self.sentiment_memo, start_time, end_time)

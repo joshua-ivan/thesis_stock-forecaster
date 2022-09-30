@@ -44,7 +44,7 @@ class PriceFetcherTests(unittest.TestCase):
         start_date, end_date = '2022-08-15', '2022-08-16'
         filename = '../forecaster_data/prices/MOCK.csv'
         pf.get_stock_history('MOCK', start_date, end_date)
-        mock_ticker.history.assert_called_with(start=start_date, end=end_date, period='1d', interval='1m')
+        mock_ticker.history.assert_called_with(start=start_date, end=end_date, period='5d', interval='5m')
         mock_pandas.read_csv.assert_not_called()
         mock_pandas.concat.assert_not_called()
         mock_history.to_csv.assert_called_with(filename)
@@ -58,7 +58,7 @@ class PriceFetcherTests(unittest.TestCase):
         pf.merge_stock_data = Mock()
         pf.merge_stock_data.return_value = merge_df
         pf.get_stock_history('MOCK', start_date, end_date)
-        mock_ticker.history.assert_called_with(start=start_date, end=end_date, period='1d', interval='1m')
+        mock_ticker.history.assert_called_with(start=start_date, end=end_date, period='5d', interval='5m')
         mock_pandas.read_csv.assert_called_with(filename, index_col=0, parse_dates=True)
         pf.merge_stock_data.assert_called_with(mock_history, mock_df)
         merge_df.to_csv.assert_called_with('../forecaster_data/prices/MOCK.csv')

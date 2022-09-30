@@ -19,3 +19,5 @@ intermediate_data/
 
 # Output
 *.csv
+*.log
+

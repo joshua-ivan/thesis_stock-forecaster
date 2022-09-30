@@ -1,5 +1,6 @@
 from trader.price_fetcher import PriceFetcher
 from trader.position import Position
+from utilities.file_io import write_file
 from datetime import datetime, timezone, timedelta
 import pandas
 import random
@@ -18,6 +19,7 @@ class DartboardInvestor:
         self.tickers = tickers
         self.rng = rng
         self.price_fetcher = pf
+        self.log = []
 
     def check_open_positions(self, closing_datetime):
         for i in range(len(self.open_positions) - 1, -1, -1):
@@ -36,7 +38,10 @@ class DartboardInvestor:
             self.portfolio_value += (closing_value - opening_value)
 
         position = self.open_positions.pop(index)
-        print(f'Closed position: {position}\nPortfolio value: {self.portfolio_value}')
+
+        log_str = f'Closed position: {position}\nPortfolio value: {self.portfolio_value}'
+        self.log.append(log_str)
+        print(log_str)
 
     def new_open_position(self, date_time):
         stock, price = '', -1
@@ -49,7 +54,10 @@ class DartboardInvestor:
         leverage_type = 'SHORT' if self.rng.randint(0, 99) < 50 else 'LONG'
         position = Position(stock, leverage_type, shares, price, date_time)
         self.open_positions.append(position)
-        print(f'New position: {position}')
+
+        log_str = f'New position: {position}'
+        self.log.append(log_str)
+        print(log_str)
 
     def run_simulation(self):
         start_datetime = datetime.strptime(self.start_date, '%Y-%m-%d')
@@ -63,4 +71,9 @@ class DartboardInvestor:
             current_datetime_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S-04:00')
             self.check_open_positions(current_datetime_str)
             self.new_open_position(current_datetime_str)
-            current_datetime = current_datetime + timedelta(minutes=1)
+
+            current_datetime = current_datetime + timedelta(minutes=5)
+            if current_datetime.hour >= 16:
+                current_datetime = current_datetime + timedelta(hours=17, minutes=30)
+
+        write_file('.', 'dartboard.log', ''.join([(lambda st: f'{st}\n')(st) for st in self.log]))

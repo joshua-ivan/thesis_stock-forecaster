@@ -67,5 +67,5 @@ class MachineInvestorTests(unittest.TestCase):
             self.assertEqual(mi.open_positions[i], expected_positions[i])
 
     def test_run_simulation(self):
-        mi = MachineInvestor(start_date='2022-09-07', end_date='2022-09-08')
-        # mi.run_simulation()
+        mi = MachineInvestor(start_date='2022-08-15', end_date='2022-08-20')
+        mi.run_simulation()
