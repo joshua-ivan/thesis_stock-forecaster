@@ -9,7 +9,7 @@ from datetime import datetime, timezone, timedelta
 
 
 class MachineInvestor:
-    def __init__(self, start_date, end_date, pf=PriceFetcher(), ra=RedditAnalyzer(), fc=LSTMForecaster()):
+    def __init__(self, start_date, end_date, pf=PriceFetcher(), ra=RedditAnalyzer(), fc=ARIMAGARCHForecaster()):
         self.open_positions = []
         self.portfolio_value = 0.0
         self.loss_threshold = 0.01
@@ -56,15 +56,16 @@ class MachineInvestor:
         return self.price_fetcher.get_price(ticker, position_datetime, input_dates[0], input_dates[1])
 
     def get_forecast(self, ticker, position_datetime):
-        return self.forecaster.generate_forecast(ticker, position_datetime, 360, 60)
+        # return self.forecaster.generate_forecast(ticker, position_datetime, 360, 60)
+        return self.forecaster.generate_forecast(ticker, position_datetime, 360)
 
     def new_open_position(self, ticker, sentiment, price, forecast, position_datetime):
         min_cash_to_spend = 10000.00
         shares = int(min_cash_to_spend / price) + (min_cash_to_spend % price > 0)
         position = None
-        if (sentiment > 0) and (forecast < 0):
+        if (sentiment > 0.05) and (forecast < -0.01):
             position = Position(ticker, 'SHORT', shares, price, position_datetime)
-        elif (sentiment < 0) and (forecast > 0):
+        elif (sentiment < -0.05) and (forecast > 0.01):
             position = Position(ticker, 'LONG', shares, price, position_datetime)
 
         if position is not None:
