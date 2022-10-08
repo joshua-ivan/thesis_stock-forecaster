@@ -97,11 +97,13 @@ class RedditAnalyzer:
 
         content = file[3]
         tickers = list(set(tickers) | set(self.parse_tickers(content)))
-        raw_sentiment = self.raw_score(content)
-
-        vote_score = int(file[2])
-        weighted_sentiment = raw_sentiment * self.scaler.transform(vote_score)
-        return PostSentiment(filename, tickers, weighted_sentiment)
+        if len(tickers) <= 0:
+            return PostSentiment(filename, tickers, 0.0)
+        else:
+            raw_sentiment = self.raw_score(content)
+            vote_score = int(file[2])
+            weighted_sentiment = raw_sentiment * self.scaler.transform(vote_score)
+            return PostSentiment(filename, tickers, weighted_sentiment)
 
     def cached_process_post(self, filename):
         memo = self.sentiment_memo.loc[self.sentiment_memo['filename'] == filename]
