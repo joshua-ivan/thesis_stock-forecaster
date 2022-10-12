@@ -11,11 +11,15 @@ class ForecasterUtilsTests(unittest.TestCase):
         self.assertTrue(numpy.allclose(actual_prices, expected_prices))
 
     def test_load_stock_prices_invalid_timestamp(self):
-        expected_prices = numpy.array([])
-
-        actual_prices = load_stock_prices('mock_data/forecaster/GME.csv', '2022-08-16 16:01:00-04:00', 5)
+        expected_prices = load_stock_prices('mock_data/forecaster/GME.csv', '2022-08-15 15:59:00-04:00', 5)
+        actual_prices = load_stock_prices('mock_data/forecaster/GME.csv', '2022-08-15 16:00:00-04:00', 5)
         self.assertTrue(numpy.allclose(actual_prices, expected_prices))
 
+        expected_prices = load_stock_prices('mock_data/forecaster/GME.csv', '2022-08-15 15:59:00-04:00', 5)
+        actual_prices = load_stock_prices('mock_data/forecaster/GME.csv', '2022-08-16 9:30:00-04:00', 5)
+        self.assertTrue(numpy.allclose(actual_prices, expected_prices))
+
+        expected_prices = numpy.array([])
         actual_prices = load_stock_prices('mock_data/forecaster/GME.csv', 'BLANK', 5)
         self.assertTrue(numpy.allclose(actual_prices, expected_prices))
 

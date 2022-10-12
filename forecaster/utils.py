@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import matplotlib.pyplot as pyplot
 import pandas
 import numpy
@@ -12,7 +13,14 @@ def load_stock_prices(stock_file_path, timestamp, num_prices):
     try:
         timestamp_index = raw_prices.index[raw_prices['Datetime'] == timestamp].tolist()[0] + 1
     except IndexError:
-        return numpy.ndarray([])
+        try:
+            datetime_obj = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S-04:00')
+            datetime_obj -= timedelta(minutes=1)
+            if datetime_obj.hour <= 9 and datetime_obj.minute < 30:
+                datetime_obj = datetime_obj - timedelta(hours=17, minutes=30)
+            return load_stock_prices(stock_file_path, datetime_obj.strftime('%Y-%m-%d %H:%M:%S-04:00'), num_prices)
+        except ValueError:
+            return numpy.ndarray([])
 
     clean_prices = raw_prices.iloc[(timestamp_index - num_prices):timestamp_index, 1:2].values
     return numpy.ndarray.flatten(clean_prices)
