@@ -34,6 +34,18 @@ class PriceFetcherTests(unittest.TestCase):
         price = pf.get_price('GME', '2022-08-15 10:00:00-04:00', start_date, end_date)
         self.assertEqual(-1, price)
 
+    def test_get_price_missing_timestamp(self):
+        mock_pandas = Mock()
+        pf = PriceFetcher(pd=mock_pandas, stock_dir='mock_data/trader/prices')
+        pf.get_stock_history = Mock()
+        mock_csv = pandas.read_csv('mock_data/trader/prices/GME.csv', index_col='Datetime')
+        pf.get_stock_history.return_value = mock_csv
+        start_date, end_date = '2022-08-15', '2022-08-16'
+
+        expected = pf.get_price('GME', '2022-08-16 15:49:00-04:00', start_date, end_date)
+        actual = pf.get_price('GME', '2022-08-16 15:50:00-04:00', start_date, end_date)
+        self.assertEqual(expected, actual)
+
     def test_get_stock_history(self):
         mock_yfinance, mock_ticker, mock_history, mock_pandas, mock_os = Mock(), Mock(), Mock(), Mock(), Mock()
         mock_yfinance.Ticker.return_value = mock_ticker
