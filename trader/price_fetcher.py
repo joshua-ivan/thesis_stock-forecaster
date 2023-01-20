@@ -37,7 +37,7 @@ class PriceFetcher:
         return price
 
     def get_stock_history(self, ticker, start_date, end_date):
-        history = self.yfinance.Ticker(ticker).history(start=start_date, end=end_date, period='5d', interval='5m')
+        history = self.yfinance.Ticker(ticker).history(start=start_date, end=end_date, period='1d', interval='1m')
         file = f'{self.stock_dir}/{ticker}.csv'
         if self.os.path.exists(file):
             cached = self.pandas.read_csv(file, index_col=0, parse_dates=True)

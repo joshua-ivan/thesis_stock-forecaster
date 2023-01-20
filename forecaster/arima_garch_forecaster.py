@@ -24,8 +24,8 @@ class ARIMAGARCHForecaster:
         return predicted_mean - predicted_variance
 
     def evaluate_model(self):
-        prices = load_stock_prices('../forecaster_data/prices/BBBY.csv', '2022-09-07 15:59:00-04:00', 390)
-        training_data, test_data = train_test_split(prices, train_size=360, test_size=30)
+        prices = load_stock_prices('model_eval/one-minute/BBBY.csv', '2022-09-12 15:59:00-04:00', 90)
+        training_data, test_data = train_test_split(prices, train_size=60, test_size=30)
         test_set = self.generate_test_set(training_data, test_data)
 
         forecasts = []
@@ -35,6 +35,6 @@ class ARIMAGARCHForecaster:
         plot_predictions(test_data, forecasts, 'BBBY')
 
     def generate_forecast(self, ticker, training_timestamp, training_size):
-        base_data_dir = '../forecaster_data'
-        training_data = load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv', training_timestamp, training_size)
+        base_data_dir = '../forecaster_data/prices'
+        training_data = load_stock_prices(f'{base_data_dir}/{ticker}.csv', training_timestamp, training_size)
         return (self.predict(training_data) - training_data[-1]) / training_data[-1]

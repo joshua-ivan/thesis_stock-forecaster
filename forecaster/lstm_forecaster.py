@@ -77,19 +77,19 @@ class LSTMForecaster:
         return prediction
 
     def evaluate_model(self, ticker, training_timestamp, training_size, test_timestamp, test_size, cluster_size):
-        base_data_dir = '../forecaster_data'
-        training_data = load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv', training_timestamp, training_size)
+        base_data_dir = 'model_eval/one-minute'
+        training_data = load_stock_prices(f'{base_data_dir}/{ticker}.csv', training_timestamp, training_size)
         training_set = self.generate_training_set(training_data, cluster_size)
         stock_model = self.compile_model(KerasSequential, training_set.feature_set)
         stock_model = self.fit_model(stock_model, training_set)
 
-        test_data = load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv', test_timestamp, test_size)
+        test_data = load_stock_prices(f'{base_data_dir}/{ticker}.csv', test_timestamp, test_size)
         test_set = self.generate_test_set(training_data, test_data, cluster_size)
-        self.test_predictions(stock_model, test_set, test_data, pyplot, python_os, f'{base_data_dir}/graphs', ticker)
+        self.test_predictions(stock_model, test_set, test_data, pyplot, python_os, f'../forecaster_data/graphs', ticker)
 
     def generate_forecast(self, ticker, training_timestamp, training_size, cluster_size):
-        base_data_dir = '../forecaster_data'
-        training_data = load_stock_prices(f'{base_data_dir}/prices/{ticker}.csv', training_timestamp, training_size)
+        base_data_dir = '../forecaster_data/prices'
+        training_data = load_stock_prices(f'{base_data_dir}/{ticker}.csv', training_timestamp, training_size)
         training_set = self.generate_training_set(training_data, cluster_size)
 
         stock_model = self.model_memo.get(ticker)

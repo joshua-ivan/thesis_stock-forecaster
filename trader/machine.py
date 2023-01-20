@@ -17,7 +17,7 @@ class MachineInvestor(Investor):
 
     def get_sentiment(self, position_datetime):
         posix_timestamp = datetime_string_to_posix(position_datetime)
-        return self.reddit_analyzer.extract_sentiment(int(posix_timestamp - (60 * 60 * 5)), int(posix_timestamp))
+        return self.reddit_analyzer.extract_sentiment(int(posix_timestamp - (60 * 60)), int(posix_timestamp))
 
     def get_price(self, ticker, position_datetime):
         input_dates = datetime_string_to_yfinance_dates(position_datetime)
@@ -25,7 +25,7 @@ class MachineInvestor(Investor):
 
     def get_forecast(self, ticker, position_datetime):
         # return self.forecaster.generate_forecast(ticker, position_datetime, 360, 60)
-        return self.forecaster.generate_forecast(ticker, position_datetime, 360)
+        return self.forecaster.generate_forecast(ticker, position_datetime, 60)
 
     def new_open_position(self, ticker, sentiment, price, forecast, position_datetime):
         min_cash_to_spend = 10000.00
@@ -66,8 +66,9 @@ class MachineInvestor(Investor):
 
             self.new_open_position(ticker, sentiment[1], price, forecast, current_datetime_str)
 
-            current_datetime = current_datetime + timedelta(minutes=5)
+            current_datetime = current_datetime + timedelta(minutes=1)
             if current_datetime.hour >= 16:
                 current_datetime = current_datetime + timedelta(hours=17, minutes=30)
 
-        write_file('.', 'machine.log', ''.join([(lambda st: f'{st}\n')(st) for st in self.log]))
+        log_timestamp = datetime.now().strftime('%m%d%Y_%H%M')
+        write_file('.', f'machine_{log_timestamp}.log', ''.join([(lambda st: f'{st}\n')(st) for st in self.log]))

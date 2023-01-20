@@ -232,30 +232,34 @@ class RedditScraperTests(unittest.TestCase):
 
         bounds = [
             {
-                'start_date': int(datetime(2022, 8, 1, 4, 0, 0).timestamp()),
-                'end_date': int(datetime(2022, 8, 9, 4, 0, 0).timestamp())
+                'start_date': int(datetime(2022, 9, 1, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 9, 7, 4, 0, 0).timestamp())
             },
             {
-                'start_date': int(datetime(2022, 8, 9, 4, 0, 0).timestamp()),
-                'end_date': int(datetime(2022, 8, 17, 4, 0, 0).timestamp())
+                'start_date': int(datetime(2022, 9, 7, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 9, 13, 4, 0, 0).timestamp())
             },
             {
-                'start_date': int(datetime(2022, 8, 17, 4, 0, 0).timestamp()),
-                'end_date': int(datetime(2022, 8, 25, 4, 0, 0).timestamp())
+                'start_date': int(datetime(2022, 9, 13, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 9, 19, 4, 0, 0).timestamp())
             },
             {
-                'start_date': int(datetime(2022, 8, 25, 4, 0, 0).timestamp()),
-                'end_date': int(datetime(2022, 9, 1, 4, 0, 0).timestamp())
+                'start_date': int(datetime(2022, 9, 19, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 9, 25, 4, 0, 0).timestamp())
+            },
+            {
+                'start_date': int(datetime(2022, 9, 25, 4, 0, 0).timestamp()),
+                'end_date': int(datetime(2022, 10, 1, 4, 0, 0).timestamp())
             }
         ]
 
-        # process_pool = Pool(4)
-        # result = process_pool.map_async(process, bounds)
-        # result = result.get()
-        # process_pool.close()
-        # for res in result:
-        #     if res != 0:
-        #         print('something broke')
+        process_pool = Pool(5)
+        result = process_pool.map_async(process, bounds)
+        result = result.get()
+        process_pool.close()
+        for res in result:
+            if res != 0:
+                print('something broke')
 
     def test_run_recent_scraper(self):
         scraper = RedditScraper('US/Pacific')

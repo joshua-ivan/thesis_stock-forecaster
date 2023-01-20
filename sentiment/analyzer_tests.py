@@ -214,24 +214,25 @@ class RedditScraperTests(unittest.TestCase):
         self.assertEqual(ra.sid.lexicon.get('testtest'), None)
 
     def test_extract_sentiment(self):
-        # start_time = datetime.now()
-        # ra = RedditAnalyzer()
-        # hottest_stock = ra.extract_sentiment(
-        #     int(datetime(2022, 9, 7, 12, 30, 0).timestamp()),
-        #     int(datetime(2022, 9, 7, 13, 30, 0).timestamp())
-        # )
-        # hottest_stock = ra.extract_sentiment(
-        #     int(datetime(2022, 9, 7, 12, 31, 0).timestamp()),
-        #     int(datetime(2022, 9, 7, 13, 31, 0).timestamp())
-        # )
-        # hottest_stock = ra.extract_sentiment(
-        #     int(datetime(2022, 9, 7, 12, 32, 0).timestamp()),
-        #     int(datetime(2022, 9, 7, 13, 32, 0).timestamp())
-        # )
-        # end_time = datetime.now()
-        # print(end_time - start_time)
-        # print(hottest_stock)
-        pass
+        ra = RedditAnalyzer()
+        start_time = datetime.now()
+        print(ra.extract_sentiment(
+            int(datetime(2022, 9, 15, 8, 30, 0).timestamp()), int(datetime(2022, 9, 15, 13, 30, 0).timestamp())
+        ))
+        print(ra.extract_sentiment(
+            int(datetime(2022, 9, 15, 8, 35, 0).timestamp()), int(datetime(2022, 9, 15, 13, 35, 0).timestamp())
+        ))
+        print(ra.extract_sentiment(
+            int(datetime(2022, 9, 15, 8, 40, 0).timestamp()), int(datetime(2022, 9, 15, 13, 40, 0).timestamp())
+        ))
+        print(ra.extract_sentiment(
+            int(datetime(2022, 9, 15, 8, 45, 0).timestamp()), int(datetime(2022, 9, 15, 13, 45, 0).timestamp())
+        ))
+        print(ra.extract_sentiment(
+            int(datetime(2022, 9, 15, 8, 50, 0).timestamp()), int(datetime(2022, 9, 15, 13, 50, 0).timestamp())
+        ))
+        end_time = datetime.now()
+        print(end_time - start_time)
 
     def test_twenty_four_hour_freqency(self):
         # ra = RedditAnalyzer()

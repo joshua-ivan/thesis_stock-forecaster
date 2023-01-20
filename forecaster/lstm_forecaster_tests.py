@@ -79,15 +79,17 @@ class LSTMForecasterTests(unittest.TestCase):
             self.assertTrue(numpy.allclose(expected_test_set[i], test_set[i]))
 
     def test_evaluate_model(self):
-        lstm_fcr = LSTMForecaster()
-        # lstm_fcr.evaluate_model('BBBY', '2022-09-07 15:29:00-04:00', 360, '2022-09-07 15:59:00-04:00', 30, 60)
+        # lstm_fcr = LSTMForecaster()
+        # lstm_fcr.evaluate_model('BBBY', '2022-09-12 15:29:00-04:00', 360, '2022-09-12 15:59:00-04:00', 30, 60)
+        pass
 
     def test_generate_forecast(self):
-        # start_time = datetime.now()
-        # lstm_fcr = LSTMForecaster()
-        # lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:30:00-04:00', 360, 60)
-        # lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:31:00-04:00', 360, 60)
-        # lstm_fcr.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360, 60)
-        # end_time = datetime.now()
-        # print(end_time - start_time)
-        pass
+        lstm_fcr = LSTMForecaster()
+        start_time = datetime.now()
+        print(lstm_fcr.generate_forecast('BBBY', '2022-09-16 13:30:00-04:00', 360, 60))
+        print(lstm_fcr.generate_forecast('BBBY', '2022-09-16 13:35:00-04:00', 360, 60))
+        print(lstm_fcr.generate_forecast('BBBY', '2022-09-16 13:40:00-04:00', 360, 60))
+        print(lstm_fcr.generate_forecast('BBBY', '2022-09-16 13:45:00-04:00', 360, 60))
+        print(lstm_fcr.generate_forecast('BBBY', '2022-09-16 13:50:00-04:00', 360, 60))
+        end_time = datetime.now()
+        print(end_time - start_time)

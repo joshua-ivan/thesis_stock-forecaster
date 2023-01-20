@@ -31,8 +31,8 @@ class DartboardTests(unittest.TestCase):
         self.assertEqual(expected_position, dbi.open_positions[2])
 
     def test_live(self):
-        dbi = DartboardInvestor(start_date='2022-08-15', end_date='2022-08-20')
-        # dbi.run_simulation()
-        # print(dbi.portfolio_value)
+        dbi = DartboardInvestor(start_date='2022-09-19', end_date='2022-09-24')
+        dbi.run_simulation()
+        print(dbi.portfolio_value)
         for position in dbi.open_positions:
             print(position)

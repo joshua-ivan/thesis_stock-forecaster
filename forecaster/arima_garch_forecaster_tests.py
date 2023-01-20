@@ -14,14 +14,17 @@ class ARIMAGARCHForecasterTests(unittest.TestCase):
         numpy.testing.assert_array_equal(expected, agf.generate_test_set([1, 2, 3], [4, 5]))
 
     def test_evaluate_model(self):
-        agf = ARIMAGARCHForecaster()
+        # agf = ARIMAGARCHForecaster()
         # agf.evaluate_model()
+        pass
 
     def test_generate_forecast(self):
-        # start_time = datetime.now()
         agf = ARIMAGARCHForecaster()
-        # print(agf.generate_forecast('BBBY', '2022-09-07 09:30:00-04:00', 360))
-        # print(agf.generate_forecast('BBBY', '2022-09-07 09:31:00-04:00', 360))
-        # print(agf.generate_forecast('BBBY', '2022-09-07 09:32:00-04:00', 360))
-        # end_time = datetime.now()
-        # print(end_time - start_time)
+        start_time = datetime.now()
+        print(agf.generate_forecast('BBBY', '2022-09-12 14:30:00-04:00', 60))
+        print(agf.generate_forecast('BBBY', '2022-09-12 14:35:00-04:00', 60))
+        print(agf.generate_forecast('BBBY', '2022-09-12 14:40:00-04:00', 60))
+        print(agf.generate_forecast('BBBY', '2022-09-12 14:45:00-04:00', 60))
+        print(agf.generate_forecast('BBBY', '2022-09-12 14:50:00-04:00', 60))
+        end_time = datetime.now()
+        print(end_time - start_time)
